@@ -32,6 +32,8 @@ class SearchTextField: UITextField {
         bounds.inset(by: padding)
     }
     
+    
+    
     override func textRect(forBounds bounds: CGRect) -> CGRect {
         bounds.inset(by: padding)
     }
