@@ -123,6 +123,8 @@ final class MainViewController: UIViewController, UITextFieldDelegate {
     }
 }
 
+//MARK: - MainViewController SetUp
+
 private extension MainViewController {
     func setupUI() {
         self.navigationController?.navigationBar.isHidden = true
@@ -183,6 +185,8 @@ private extension MainViewController {
     }
 }
 
+//MARK: - UITableViewDelegate, UITableViewDataSource
+
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return favouriteButton.isSelected ? jsonReader.getNumberOfFavouriteCells() : number
@@ -229,6 +233,8 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
+//MARK: - StocksTableViewCellDelegate
+
 extension MainViewController: StocksTableViewCellDelegate {
     func favouriteStockSelected(state: Bool, ticker: String?) {
         guard let ticker = ticker else { return }
@@ -242,11 +248,15 @@ extension MainViewController: StocksTableViewCellDelegate {
     }
 }
 
+//MARK: -SearchToolBarDelegate
+
 extension MainViewController: SearchToolbarDelegate {
     func phonePressed() {
         searchTextField.resignFirstResponder()
     }
 }
+
+//MARK: - SearchTextFieldDelegate
 
 extension MainViewController: SearchTextFieldDelegate {
     func textFieldDidChanged(textField: UITextField) {
