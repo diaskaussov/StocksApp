@@ -7,21 +7,19 @@
 
 import UIKit
 
+protocol SearchTextFieldDelegate {
+    func textFieldDidChanged(textField: UITextField)
+}
+
 class SearchTextField: UITextField {
-    private let padding = UIEdgeInsets(top: 0, left: 50, bottom: 0, right: 0)
+    private let padding = UIEdgeInsets(top: 0, left: 45, bottom: 0, right: 0)
     private let leftViewContainer = UIView()
     
-    init(placeholder: String, button: UIButton) {
+    var searchTextFielDelegate: SearchTextFieldDelegate?
+    
+    init(placeholder: String, button: UIButton, toolbar: UIToolbar) {
         super.init(frame: .zero)
-        setupLayout(placeholder: placeholder, button: button)
-        self.translatesAutoresizingMaskIntoConstraints = false
-        self.isUserInteractionEnabled = true
-        leftViewContainer.isUserInteractionEnabled = true
-        button.isUserInteractionEnabled = true
-        
-        leftViewContainer.backgroundColor = .lightGray
-        button.backgroundColor = .blue
-        self.backgroundColor = .white
+        setupLayout(placeholder: placeholder, button: button, toolbar: toolbar)
     }
     
     required init?(coder: NSCoder) {
@@ -32,8 +30,6 @@ class SearchTextField: UITextField {
         bounds.inset(by: padding)
     }
     
-    
-    
     override func textRect(forBounds bounds: CGRect) -> CGRect {
         bounds.inset(by: padding)
     }
@@ -42,7 +38,8 @@ class SearchTextField: UITextField {
         bounds.inset(by: padding)
     }
     
-    private func setupLayout(placeholder: String, button: UIButton) {
+    private func setupLayout(placeholder: String, button: UIButton, toolbar: UIToolbar) {
+        
         textColor = .black
         layer.cornerRadius = 24
         layer.borderWidth = 1
@@ -56,25 +53,41 @@ class SearchTextField: UITextField {
             string: placeholder,
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.black]
         )
+        self.translatesAutoresizingMaskIntoConstraints = false
+        button.translatesAutoresizingMaskIntoConstraints = false
+        self.inputAccessoryView = toolbar
+        
+        self.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        
+        setLeftView()
         setupButton(button: button)
+    }
+    
+    private func setLeftView() {
+        leftViewContainer.translatesAutoresizingMaskIntoConstraints = false
+        leftViewContainer.isUserInteractionEnabled = true
+        self.leftViewMode = UITextField.ViewMode.always
+        self.leftView = leftViewContainer
     }
     
     private func setupButton(button: UIButton) {
         self.addSubview(leftViewContainer)
-        leftViewContainer.translatesAutoresizingMaskIntoConstraints = false
         leftViewContainer.addSubview(button)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        self.leftViewMode = UITextField.ViewMode.always
-        self.leftView = leftViewContainer
+        
         NSLayoutConstraint.activate([
-            
             leftViewContainer.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             leftViewContainer.topAnchor.constraint(equalTo: self.topAnchor),
             leftViewContainer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             leftViewContainer.widthAnchor.constraint(equalToConstant: 40),
             
-            button.leadingAnchor.constraint(equalTo: leftViewContainer.leadingAnchor, constant: 10),
+            button.leadingAnchor.constraint(equalTo: leftViewContainer.leadingAnchor, constant: 15),
             button.centerYAnchor.constraint(equalTo: leftViewContainer.centerYAnchor),
         ])
+    }
+    
+    @objc
+    private func textFieldDidChange(_ textField: UITextField) {
+        print("delegate")
+        searchTextFielDelegate?.textFieldDidChanged(textField: self)
     }
 }

@@ -18,13 +18,16 @@ struct stockModel {
 }
 
 class JSONReader {
-    var models: [stockModel] = []
+    var stockModels: [stockModel] = []
     
     var favouriteModels: [stockModel] = []
+    
+    var searchModels: [stockModel] = []
     
     init() {
         readJson()
     }
+    
     func readJson() {
         if let path = Bundle.main.path(forResource: "stockProfiles", ofType: "json") {
             do {
@@ -33,7 +36,7 @@ class JSONReader {
                 let models = try JSONDecoder().decode([jsonModel].self, from: data)
                 
                 for model in models {
-                    self.models.append(stockModel(jsonModel: model))
+                    self.stockModels.append(stockModel(jsonModel: model))
                 }
                 
             } catch {
@@ -44,21 +47,13 @@ class JSONReader {
         }
     }
     
-    func getName(index: Int) -> String {
-        return models[index].jsonModel.name
-    }
-    
-    func getticker(index: Int) -> String {
-        return models[index].jsonModel.ticker
-    }
-    
-    func getState(index: Int) -> Bool {
-        return models[index].isFavourite
+    func getModel(index: Int) -> stockModel {
+        return stockModels[index]
     }
     
     func getNumberOfFavouriteCells() -> Int {
         var ans = 0
-        for model in models {
+        for model in stockModels {
             if model.isFavourite {
                 ans = ans + 1
             }
@@ -66,19 +61,28 @@ class JSONReader {
         return ans
     }
     
-    func getFavouriteStocks() {
+    func findFavouriteStocks() {
         favouriteModels.removeAll()
-        for model in models {
+        for model in stockModels {
             if model.isFavourite {
                 favouriteModels.append(model)
             }
         }
     }
     
-    func getImage(index: Int) -> String {
-        return models[index].jsonModel.name
+    func findSearchStocks(newString: [Character]) {
+        searchModels.removeAll()
+        print("Model: \(newString)")
+        print(newString.count)
+        
+        for i in 0..<self.stockModels.count {
+            let model = Array(self.stockModels[i].jsonModel.ticker)
+            for j in 0..<newString.count {
+                if newString[j] == model[j] {
+                    self.searchModels.append(self.stockModels[i])
+                }
+            }
+        }
     }
-
-
 }
 

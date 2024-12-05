@@ -8,7 +8,7 @@
 import UIKit
 
 protocol StocksTableViewCellDelegate {
-    func favouriteStockSelected(state: Bool, index: Int)
+    func favouriteStockSelected(state: Bool, ticker: String?)
 }
 
 class StocksTableViewCell: UITableViewCell {
@@ -33,13 +33,13 @@ class StocksTableViewCell: UITableViewCell {
         image.tintColor = .black
         image.contentMode = .scaleAspectFit
         image.layer.cornerRadius = 8
+        image.backgroundColor = .yellow
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
     
     private let tickerLabel: UILabel = {
         let label = UILabel()
-        label.text = "AAPL"
         label.font = .systemFont(ofSize: 22, weight: .bold)
         label.textColor = .black
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -48,7 +48,6 @@ class StocksTableViewCell: UITableViewCell {
     
     private let nameLabel: UILabel = {
         let label = UILabel()
-        label.text = "Apple inc."
         label.font = .systemFont(ofSize: 14, weight: .semibold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -56,7 +55,6 @@ class StocksTableViewCell: UITableViewCell {
     
     private let currentPriceLabel: UILabel = {
         let label = UILabel()
-        label.text = "$\(131.93)"
         label.font = .systemFont(ofSize: 22, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -91,11 +89,12 @@ class StocksTableViewCell: UITableViewCell {
     @objc
     private func didSelected(_ sender: UIButton) {
         if sender.tintColor == .gray {
-            sender.tintColor = UIColor(red: 254.0/255.0,
-                                       green: 190.0/255.0,
-                                       blue: 0,
-                                       alpha: 1
-                                )
+            sender.tintColor = UIColor(
+                red: 254.0/255.0,
+                green: 190.0/255.0,
+                blue: 0,
+                alpha: 1
+            )
             sender.isSelected = true
         } else {
             sender.tintColor = .gray
@@ -104,15 +103,16 @@ class StocksTableViewCell: UITableViewCell {
         
         guard let newIndex = self.index else { return }
         
-        delegate?.favouriteStockSelected(state: sender.isSelected, index: newIndex)
+        delegate?.favouriteStockSelected(state: sender.isSelected, ticker: tickerLabel.text)
     }
     
     func setButtonColor(_ sender: UIButton) {
         if sender.isSelected {
-            sender.tintColor = UIColor(red: 254.0/255.0,
-                                       green: 190.0/255.0,
-                                       blue: 0,
-                                       alpha: 1
+            sender.tintColor = UIColor(
+                red: 254.0/255.0,
+                green: 190.0/255.0,
+                blue: 0,
+                alpha: 1
             )
         } else {
             sender.tintColor = .gray
@@ -147,14 +147,10 @@ class StocksTableViewCell: UITableViewCell {
         self.layer.cornerRadius = 16
         
         NSLayoutConstraint.activate([
-            
-            self.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            self.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 16),
-            
-            photoImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            photoImageView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            photoImageView.widthAnchor.constraint(equalToConstant: 90),
-            photoImageView.heightAnchor.constraint(equalToConstant: 90),
+            photoImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            photoImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            photoImageView.widthAnchor.constraint(equalToConstant: 70),
+            photoImageView.heightAnchor.constraint(equalToConstant: 70),
             
             tickerLabel.leadingAnchor.constraint(equalTo: photoImageView.trailingAnchor, constant: 10),
             tickerLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: -5),
