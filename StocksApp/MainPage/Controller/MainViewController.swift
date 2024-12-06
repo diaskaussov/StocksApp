@@ -7,9 +7,17 @@
 
 import UIKit
 
-final class MainViewController: UIViewController {
-    var number = 20
-    let jsonReader = JSONReader()
+final class MainViewController: UIViewController, UITextFieldDelegate {
+    
+    private var number = 20
+    private let jsonReader = JSONReader()
+    private lazy var searchToolbar = SearchToolbar()
+    private lazy var searchTextField =
+    SearchTextField(
+        placeholder: "Find company or ticker",
+        button: searchButton,
+        toolbar: searchToolbar
+    )
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,7 +26,10 @@ final class MainViewController: UIViewController {
     
     private let stocksTableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(StocksTableViewCell.self, forCellReuseIdentifier: StocksTableViewCell.identifier)
+        tableView.register(
+            StocksTableViewCell.self,
+            forCellReuseIdentifier: StocksTableViewCell.identifier
+        )
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
@@ -37,7 +48,7 @@ final class MainViewController: UIViewController {
             UIImage(
                 systemName: "magnifyingglass",
                 withConfiguration: UIImage.SymbolConfiguration(
-                    font: .systemFont(ofSize: 28.0)
+                    font: .systemFont(ofSize: 20.0, weight: .semibold)
                 )
             ),
             for: .normal
@@ -47,12 +58,6 @@ final class MainViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
-    private lazy var searchTextField =
-    SearchTextField(
-        placeholder: "Find company or ticker",
-        button: searchButton
-    )
     
     private lazy var stocksButton: UIButton = {
         let button = UIButton()
@@ -93,11 +98,13 @@ final class MainViewController: UIViewController {
             favouriteButton.isSelected = true
         }
         stocksTableView.reloadData()
-        
     }
     
     private func makeFontDefault(_ sender: UIButton) {
-        sender.titleLabel?.font = .systemFont(ofSize: 24, weight: .semibold)
+        sender.titleLabel?.font = .systemFont(
+            ofSize: 24,
+            weight: .semibold
+        )
         sender.setTitleColor(.gray, for: .normal)
     }
     
@@ -106,15 +113,21 @@ final class MainViewController: UIViewController {
             ofSize: 36,
             weight: .bold
         )
-        sender.setTitleColor(
-            .black,
-            for: .normal
-        )
+        sender.setTitleColor(.black, for: .normal)
+    }
+    
+    @objc
+    func phonePressed(_ sender: UIToolbar) {
+        searchTextField.inputAccessoryView = sender
+//        print(searchTextField.text ?? "Hello")
     }
 }
 
+//MARK: - MainViewController SetUp
+
 private extension MainViewController {
     func setupUI() {
+        self.navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .white
         addSubViews()
         setupLayout()
@@ -129,17 +142,25 @@ private extension MainViewController {
         view.addSubview(stocksTableView)
         buttonView.addSubview(stocksButton)
         buttonView.addSubview(favouriteButton)
+        searchTextField.inputAccessoryView = searchToolbar
+//        print("MainViewController: \(searchTextField.text ?? "MainViewController does not show text")")
+    }
+    
+    func setDelegates() {
+        stocksTableView.delegate = self
+        stocksTableView.dataSource = self
+        searchTextField.searchTextFielDelegate = self
+        searchToolbar.toolbarDelegate = self
     }
 }
 
 private extension MainViewController {
     func setupLayout() {
-        self.navigationController?.navigationBar.isHidden = true
         NSLayoutConstraint.activate([
             searchTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            searchTextField.heightAnchor.constraint(equalToConstant: 65),
+            searchTextField.heightAnchor.constraint(equalToConstant: 50),
             
             buttonView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor),
             buttonView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -164,12 +185,7 @@ private extension MainViewController {
     }
 }
 
-private extension MainViewController {
-    func setDelegates() {
-        stocksTableView.delegate = self
-        stocksTableView.dataSource = self
-    }
-}
+//MARK: - UITableViewDelegate, UITableViewDataSource
 
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -186,18 +202,26 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         
         cell.delegate = self
         
-        var stock: stockModel = jsonReader.models[indexPath.row]
+        var stock: stockModel = jsonReader.getModel(index: indexPath.row)
         
         if favouriteButton.isSelected {
-            jsonReader.getFavouriteStocks()
-            print(jsonReader.favouriteModels)
+            jsonReader.findFavouriteStocks()
             stock = jsonReader.favouriteModels[indexPath.row]
+//            print(stock)
+//            print(indexPath)
         }
         
-        cell.configure(name: stock.jsonModel.name,
-                           ticker: stock.jsonModel.ticker,
-                           index: indexPath.row,
-                           state: stock.isFavourite
+        if jsonReader.searchModels.isEmpty == false {
+//            print(jsonReader.searchModels)
+            stock = jsonReader.searchModels[indexPath.row]
+            print(stock)
+        }
+        
+        cell.configure(
+            name: stock.jsonModel.name,
+            ticker: stock.jsonModel.ticker,
+            index: indexPath.row,
+            state: stock.isFavourite
         )
         
         return cell
@@ -209,8 +233,38 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
+//MARK: - StocksTableViewCellDelegate
+
 extension MainViewController: StocksTableViewCellDelegate {
-    func favouriteStockSelected(state: Bool, index: Int) {
-        jsonReader.models[index].isFavourite = state
+    func favouriteStockSelected(state: Bool, ticker: String?) {
+        guard let ticker = ticker else { return }
+        
+        for i in 0...jsonReader.stockModels.count {
+            if jsonReader.stockModels[i].jsonModel.ticker == ticker {
+                jsonReader.stockModels[i].isFavourite = state
+                break
+            }
+        }
+    }
+}
+
+//MARK: -SearchToolBarDelegate
+
+extension MainViewController: SearchToolbarDelegate {
+    func phonePressed() {
+        searchTextField.resignFirstResponder()
+    }
+}
+
+//MARK: - SearchTextFieldDelegate
+
+extension MainViewController: SearchTextFieldDelegate {
+    func textFieldDidChanged(textField: UITextField) {
+        guard let string = textField.text else { return }
+        
+        let newString = Array(string.uppercased())
+        print("VC: \(newString)")
+        jsonReader.findSearchStocks(newString: newString)
+        stocksTableView.reloadData()
     }
 }
