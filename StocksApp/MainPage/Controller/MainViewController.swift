@@ -7,9 +7,9 @@
 
 import UIKit
 
-final class MainViewController: UIViewController, UITextFieldDelegate {
+final class MainViewController: UIViewController {
     
-    private var number = 20
+    var number = 20
     private let jsonReader = JSONReader()
     private lazy var searchToolbar = SearchToolbar()
     private lazy var searchTextField =
@@ -18,6 +18,7 @@ final class MainViewController: UIViewController, UITextFieldDelegate {
         button: searchButton,
         toolbar: searchToolbar
     )
+    private var isSearching = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -119,7 +120,6 @@ final class MainViewController: UIViewController, UITextFieldDelegate {
     @objc
     func phonePressed(_ sender: UIToolbar) {
         searchTextField.inputAccessoryView = sender
-//        print(searchTextField.text ?? "Hello")
     }
 }
 
@@ -136,17 +136,16 @@ private extension MainViewController {
 }
 
 private extension MainViewController {
-    func addSubViews() {
+    private func addSubViews() {
         view.addSubview(searchTextField)
         view.addSubview(buttonView)
         view.addSubview(stocksTableView)
         buttonView.addSubview(stocksButton)
         buttonView.addSubview(favouriteButton)
         searchTextField.inputAccessoryView = searchToolbar
-//        print("MainViewController: \(searchTextField.text ?? "MainViewController does not show text")")
     }
     
-    func setDelegates() {
+    private func setDelegates() {
         stocksTableView.delegate = self
         stocksTableView.dataSource = self
         searchTextField.searchTextFielDelegate = self
@@ -189,7 +188,13 @@ private extension MainViewController {
 
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return favouriteButton.isSelected ? jsonReader.getNumberOfFavouriteCells() : number
+        if favouriteButton.isSelected {
+            return jsonReader.getNumberOfFavouriteCells()
+        } else if isSearching {
+            return jsonReader.getNumberOfSearchingCells()
+        }
+        return number
+        
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -207,14 +212,11 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         if favouriteButton.isSelected {
             jsonReader.findFavouriteStocks()
             stock = jsonReader.favouriteModels[indexPath.row]
-//            print(stock)
-//            print(indexPath)
         }
         
         if jsonReader.searchModels.isEmpty == false {
-//            print(jsonReader.searchModels)
+            print("TableView: \(jsonReader.searchModels)")
             stock = jsonReader.searchModels[indexPath.row]
-            print(stock)
         }
         
         cell.configure(
@@ -237,14 +239,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension MainViewController: StocksTableViewCellDelegate {
     func favouriteStockSelected(state: Bool, ticker: String?) {
-        guard let ticker = ticker else { return }
-        
-        for i in 0...jsonReader.stockModels.count {
-            if jsonReader.stockModels[i].jsonModel.ticker == ticker {
-                jsonReader.stockModels[i].isFavourite = state
-                break
-            }
-        }
+        jsonReader.favouriteSelected(ticker: ticker, state: state)
     }
 }
 
@@ -265,6 +260,17 @@ extension MainViewController: SearchTextFieldDelegate {
         let newString = Array(string.uppercased())
         print("VC: \(newString)")
         jsonReader.findSearchStocks(newString: newString)
+        isSearching = true
+        stocksTableView.reloadData()
+    }
+    func textFieldDidEndEditing(textField: UITextField){
+        print("EndEditing")
+        if searchTextField.hasText {
+            isSearching = true
+        } else {
+            isSearching = false
+            jsonReader.removeSearchModel()
+        }
         stocksTableView.reloadData()
     }
 }

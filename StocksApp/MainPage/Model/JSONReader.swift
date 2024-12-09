@@ -23,6 +23,7 @@ class JSONReader {
     var favouriteModels: [stockModel] = []
     
     var searchModels: [stockModel] = []
+
     
     init() {
         readJson()
@@ -61,6 +62,10 @@ class JSONReader {
         return ans
     }
     
+    func getNumberOfSearchingCells() -> Int {
+        return searchModels.count
+    }
+    
     func findFavouriteStocks() {
         favouriteModels.removeAll()
         for model in stockModels {
@@ -75,7 +80,7 @@ class JSONReader {
         print("Model: \(newString)")
         print(newString.count)
         
-        for i in 0..<self.stockModels.count {
+        for i in 0..<20{
             let model = Array(self.stockModels[i].jsonModel.ticker)
             for j in 0..<newString.count {
                 if newString[j] == model[j] {
@@ -83,6 +88,21 @@ class JSONReader {
                 }
             }
         }
+    }
+    
+    func favouriteSelected(ticker: String?, state: Bool) {
+        guard let ticker = ticker else { return }
+        
+        for i in 0...stockModels.count {
+            if stockModels[i].jsonModel.ticker == ticker {
+                stockModels[i].isFavourite = state
+                break
+            }
+        }
+    }
+    
+    func removeSearchModel() {
+        searchModels.removeAll()
     }
 }
 

@@ -9,6 +9,7 @@ import UIKit
 
 protocol SearchTextFieldDelegate {
     func textFieldDidChanged(textField: UITextField)
+    func textFieldDidEndEditing(textField: UITextField)
 }
 
 class SearchTextField: UITextField {
@@ -58,6 +59,7 @@ class SearchTextField: UITextField {
         self.inputAccessoryView = toolbar
         
         self.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        self.addTarget(self, action: #selector(textFieldDidEndEditing(_:)), for: .editingDidEnd)
         
         setLeftView()
         setupButton(button: button)
@@ -89,5 +91,9 @@ class SearchTextField: UITextField {
     private func textFieldDidChange(_ textField: UITextField) {
         print("delegate")
         searchTextFielDelegate?.textFieldDidChanged(textField: self)
+    }
+    @objc
+    private func textFieldDidEndEditing(_ textField: UITextField) {
+        searchTextFielDelegate?.textFieldDidEndEditing(textField: self)
     }
 }
