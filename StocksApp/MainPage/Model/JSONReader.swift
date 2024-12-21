@@ -50,8 +50,6 @@ class JSONReader {
     }
     
     func readJson() {
-        let numberOfModels = 20
-        
         if let path = Bundle.main.path(forResource: "stockProfiles", ofType: "json") {
             do {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
