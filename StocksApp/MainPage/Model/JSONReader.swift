@@ -162,7 +162,6 @@ class JSONReader {
         }
         
         let url = baseUrl + ticker
-        
         networkingService.downloadPriceData(
             urlString: url,
             completion: completion
