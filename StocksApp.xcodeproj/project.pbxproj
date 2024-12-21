@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXFileReference section */
@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B99F41BC2CE763A700FE37FF /* Exceptions for "StocksApp" folder in "StocksApp" target */ = {
+		B99F41BC2CE763A700FE37FF /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -21,14 +21,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B99F41AC2CE763A500FE37FF /* StocksApp */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				B99F41BC2CE763A700FE37FF /* Exceptions for "StocksApp" folder in "StocksApp" target */,
-			);
-			path = StocksApp;
-			sourceTree = "<group>";
-		};
+		B99F41AC2CE763A500FE37FF /* StocksApp */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B99F41BC2CE763A700FE37FF /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = StocksApp; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +85,7 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1610;
 				LastUpgradeCheck = 1610;
+				ORGANIZATIONNAME = "";
 				TargetAttributes = {
 					B99F41A92CE763A500FE37FF = {
 						CreatedOnToolsVersion = 16.1;
@@ -99,6 +93,7 @@
 				};
 			};
 			buildConfigurationList = B99F41A52CE763A500FE37FF /* Build configuration list for PBXProject "StocksApp" */;
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -107,7 +102,6 @@
 			);
 			mainGroup = B99F41A12CE763A500FE37FF;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = B99F41AB2CE763A500FE37FF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";

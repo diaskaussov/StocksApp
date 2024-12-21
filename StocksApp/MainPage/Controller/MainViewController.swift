@@ -8,14 +8,14 @@
 import UIKit
 
 final class MainViewController: UIViewController {
-    
     var number = 20
     private let jsonReader = JSONReader()
     private lazy var searchToolbar = SearchToolbar()
     private lazy var searchTextField =
     SearchTextField(
         placeholder: "Find company or ticker",
-        button: searchButton,
+        leftButton: searchButton,
+        rightButton: cancelButton,
         toolbar: searchToolbar
     )
     private var isSearching = false
@@ -55,7 +55,23 @@ final class MainViewController: UIViewController {
             for: .normal
         )
         button.tintColor = .black
-        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    private let cancelButton: UIButton = {
+        let button = UIButton()
+        button.setImage(
+            UIImage(
+                systemName: "x.circle",
+                withConfiguration: UIImage.SymbolConfiguration(
+                    font: .systemFont(ofSize: 20.0, weight: .semibold)
+                )
+            ),
+            for: .normal
+        )
+        button.tintColor = .black
+        button.addTarget(nil, action: #selector(cancelText), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -101,6 +117,12 @@ final class MainViewController: UIViewController {
         stocksTableView.reloadData()
     }
     
+    @objc
+    private func cancelText(_ sender: UIButton) {
+        print("Hello")
+        searchTextField.resignFirstResponder()
+    }
+    
     private func makeFontDefault(_ sender: UIButton) {
         sender.titleLabel?.font = .systemFont(
             ofSize: 24,
@@ -115,11 +137,6 @@ final class MainViewController: UIViewController {
             weight: .bold
         )
         sender.setTitleColor(.black, for: .normal)
-    }
-    
-    @objc
-    func phonePressed(_ sender: UIToolbar) {
-        searchTextField.inputAccessoryView = sender
     }
 }
 
@@ -150,11 +167,13 @@ private extension MainViewController {
         stocksTableView.dataSource = self
         searchTextField.searchTextFielDelegate = self
         searchToolbar.toolbarDelegate = self
+        jsonReader.delegate = self
     }
 }
 
 private extension MainViewController {
     func setupLayout() {
+        print("Setup done")
         NSLayoutConstraint.activate([
             searchTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -215,16 +234,10 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         if jsonReader.searchModels.isEmpty == false {
-            print("TableView: \(jsonReader.searchModels)")
             stock = jsonReader.searchModels[indexPath.row]
         }
         
-        cell.configure(
-            name: stock.jsonModel.name,
-            ticker: stock.jsonModel.ticker,
-            index: indexPath.row,
-            state: stock.isFavourite
-        )
+        cell.configure(cellModel: stock)
         
         return cell
     }
@@ -254,23 +267,72 @@ extension MainViewController: SearchToolbarDelegate {
 //MARK: - SearchTextFieldDelegate
 
 extension MainViewController: SearchTextFieldDelegate {
+    
+    func textFieldDidBeginEditing(textField: UITextField) {
+        stocksButton.isHidden = true
+        favouriteButton.isHidden = true
+        newConstraints()
+        stocksTableView.reloadData()
+    }
+    
     func textFieldDidChanged(textField: UITextField) {
         guard let string = textField.text else { return }
-        
         let newString = Array(string.uppercased())
-        print("VC: \(newString)")
         jsonReader.findSearchStocks(newString: newString)
         isSearching = true
         stocksTableView.reloadData()
     }
-    func textFieldDidEndEditing(textField: UITextField){
-        print("EndEditing")
+    
+    func textFieldDidEndEditing(textField: UITextField) {
         if searchTextField.hasText {
             isSearching = true
         } else {
             isSearching = false
             jsonReader.removeSearchModel()
+            stocksButton.isHidden = false
+            favouriteButton.isHidden = false
+            oldConstraints()
+            view.layoutIfNeeded()
+            view.layoutSubviews()
         }
         stocksTableView.reloadData()
     }
+    
+    func newConstraints() {
+        stocksTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 10).isActive = true
+        view.layoutIfNeeded()
+    }
+    
+    func oldConstraints() {
+        print("Old Constraints")
+        stocksTableView.removeFromSuperview()
+        view.addSubview(stocksTableView)
+        NSLayoutConstraint.activate([
+            stocksTableView.topAnchor.constraint(equalTo: buttonView.bottomAnchor),
+            stocksTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            stocksTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            stocksTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
 }
+
+extension MainViewController: JSONReaderDelegate {
+    func reloadStocksTableView() {
+        DispatchQueue.main.async {
+            self.stocksTableView.reloadData()
+        }
+    }
+}
+
+/*
+ 
+ To do's:
+ 1) Change constraints
+ 2) Add X button, rightButton - searchTextField clear
+ 3) Networking
+    i) Download images
+    ii) FinHub basic things
+    iii)
+ 4)
+ 
+ */

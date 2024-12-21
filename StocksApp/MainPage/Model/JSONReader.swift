@@ -8,13 +8,27 @@ import UIKit
 
 struct jsonModel: Codable {
     let name: String
-    let imageUrl: String?
+    let logo: String?
     let ticker: String
+}
+
+struct finhubData: Codable {
+    let c: Double // current price
+    let d: Double // delta price
+    let dp: Double // percentage
 }
 
 struct stockModel {
     var jsonModel: jsonModel
+    var image: UIImage? = nil
+    var currentPrice: Double? = nil
+    var deltaPrice: Double? = nil
+    var percentage: Double? = nil
     var isFavourite = false
+}
+
+protocol JSONReaderDelegate {
+    func reloadStocksTableView()
 }
 
 class JSONReader {
@@ -23,21 +37,38 @@ class JSONReader {
     var favouriteModels: [stockModel] = []
     
     var searchModels: [stockModel] = []
-
+    
+    var delegate: JSONReaderDelegate?
+    
+    let networkingService = NetworkingService()
+    
+    let baseUrl = "https://finnhub.io/api/v1/quote?token=ctekv9hr01qt478m7utgctekv9hr01qt478m7uu0&symbol="
     
     init() {
         readJson()
+        print(stockModels)
     }
     
     func readJson() {
+        let numberOfModels = 20
+        
         if let path = Bundle.main.path(forResource: "stockProfiles", ofType: "json") {
             do {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
                 
                 let models = try JSONDecoder().decode([jsonModel].self, from: data)
                 
-                for model in models {
-                    self.stockModels.append(stockModel(jsonModel: model))
+                for model in 0...20 {
+                    self.stockModels.append(stockModel(jsonModel: models[model]))
+                    downloadImage(for: stockModels[model].jsonModel.logo) { image in
+                        self.stockModels[model].image = image
+                    }
+                    downloadPriceData(urlString: stockModels[model].jsonModel.ticker) { [self] priceData in
+                        stockModels[model].currentPrice = priceData?.c
+                        stockModels[model].deltaPrice = priceData?.d
+                        stockModels[model].percentage = priceData?.dp
+                    }
+                    self.delegate?.reloadStocksTableView()
                 }
                 
             } catch {
@@ -77,15 +108,20 @@ class JSONReader {
     
     func findSearchStocks(newString: [Character]) {
         searchModels.removeAll()
-        print("Model: \(newString)")
-        print(newString.count)
-        
+
         for i in 0..<20{
             let model = Array(self.stockModels[i].jsonModel.ticker)
-            for j in 0..<newString.count {
-                if newString[j] == model[j] {
-                    self.searchModels.append(self.stockModels[i])
+            var flag = true
+            let length = newString.count < model.count ? newString.count : model.count
+                        
+            for j in 0..<length {
+                if newString[j] != model[j] {
+                    flag = false
                 }
+            }
+            
+            if flag {
+                searchModels.append(self.stockModels[i])
             }
         }
     }
@@ -103,6 +139,36 @@ class JSONReader {
     
     func removeSearchModel() {
         searchModels.removeAll()
+    }
+    
+    func downloadImage(for urlString: String?, completion: @escaping (UIImage?) -> Void) {
+        
+        guard let urlString = urlString else {
+            print("WrongUrl, download Image")
+            completion(UIImage(systemName: "x.square.fill"))
+            return
+        }
+        
+        networkingService.downloadImage(
+            urlString: urlString,
+            completion: completion
+        )
+    }
+    
+    func downloadPriceData(urlString: String?, completion: @escaping (finhubData?) -> Void) {
+        
+        guard let ticker = urlString else {
+            print("WrongUrl, downloadPriceData")
+            completion(nil)
+            return
+        }
+        
+        let url = baseUrl + ticker
+        
+        networkingService.downloadPriceData(
+            urlString: url,
+            completion: completion
+        )
     }
 }
 

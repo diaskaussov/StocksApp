@@ -55,6 +55,7 @@ class StocksTableViewCell: UITableViewCell {
     
     private let currentPriceLabel: UILabel = {
         let label = UILabel()
+        label.text = "$\(131.4)"
         label.font = .systemFont(ofSize: 22, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -101,8 +102,6 @@ class StocksTableViewCell: UITableViewCell {
             sender.isSelected = false
         }
         
-        guard let newIndex = self.index else { return }
-        
         delegate?.favouriteStockSelected(state: sender.isSelected, ticker: tickerLabel.text)
     }
     
@@ -127,12 +126,21 @@ class StocksTableViewCell: UITableViewCell {
         }
     }
     
-    func configure(name: String, ticker: String, index: Int, state: Bool) {
-        nameLabel.text = name
-        tickerLabel.text = ticker
-        self.index = index
-        starButton.isSelected = state
-        setButtonColor(starButton)
+    func configure(cellModel: stockModel) {
+        photoImageView.image = cellModel.image
+        nameLabel.text = cellModel.jsonModel.name
+        tickerLabel.text = cellModel.jsonModel.ticker
+        
+        guard let currentPrice = cellModel.currentPrice else { return }
+        currentPriceLabel.text = "$\(currentPrice)"
+        
+        guard let deltaPrice = cellModel.deltaPrice else { return }
+        deltaPriceLabel.text = "$\(deltaPrice)"
+        
+        guard let percentage = cellModel.percentage else { return }
+        percentageLabel.text = "$\(percentage)"
+        
+        starButton.isSelected = cellModel.isFavourite
     }
     
     private func setUI() {

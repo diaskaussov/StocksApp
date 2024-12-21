@@ -10,8 +10,6 @@ import UIKit
 struct CellModel {
     let image: UIImage
     let ticker: String
-    let name: String
-    let currentPrice: Double
-    let deltaPrice: Double
-    let percentage: Double
+    let name: String // let jsonModel: dq
+    
 }
