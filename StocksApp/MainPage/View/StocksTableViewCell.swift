@@ -77,12 +77,12 @@ class StocksTableViewCell: UITableViewCell {
         return label
     }()
     
-    private let starButton: UIButton = {
+    private lazy var starButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(systemName: "star.fill"), for: .normal)
         button.tintColor = .gray
         button.isSelected = false
-        button.addTarget(nil, action: #selector(didSelected), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didSelected), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()

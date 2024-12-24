@@ -13,11 +13,12 @@ class NetworkingService {
     //Secret: ctekv9hr01qt478m7uv0
     
     func downloadImage(
-        urlString: String,
+        urlString: String?,
         completion: @escaping (_ image: UIImage?) -> ()
     ) {
-        guard let url = URL(string: urlString) else {
-            print("NetworkService Wrong URL: \(urlString)")
+        
+        guard let saveString = urlString, let url = URL(string: saveString) else {
+            print("NetworkService Wrong URL")
             completion(UIImage(systemName: "x.square.fill"))
             return
         }
@@ -36,7 +37,7 @@ class NetworkingService {
                 completion(image)
                 return
             }
-            print("Cannot get UIImage (NetworkService)")
+            completion(nil)
         }.resume()
     }
     

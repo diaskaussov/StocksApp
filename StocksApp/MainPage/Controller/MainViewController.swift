@@ -325,14 +325,7 @@ extension MainViewController: JSONReaderDelegate {
 }
 
 /*
+
  
- To do's:
- 1) Change constraints
- 2) Add X button, rightButton - searchTextField clear
- 3) Networking
-    i) Download images
-    ii) FinHub basic things
-    iii)
- 4)
  
- */
+*/

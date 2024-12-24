@@ -49,24 +49,30 @@ class JSONReader {
         print(stockModels)
     }
     
+    var group = DispatchGroup()
+    
     func readJson() {
         if let path = Bundle.main.path(forResource: "stockProfiles", ofType: "json") {
             do {
+                
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
                 
                 let models = try JSONDecoder().decode([jsonModel].self, from: data)
                 
                 for model in 0...20 {
                     self.stockModels.append(stockModel(jsonModel: models[model]))
-                    downloadImage(for: stockModels[model].jsonModel.logo) { image in
+                    group.enter()
+                    networkingService.downloadImage(urlString: stockModels[model].jsonModel.logo) { image in
                         self.stockModels[model].image = image
+                        self.group.leave()
                     }
                     downloadPriceData(urlString: stockModels[model].jsonModel.ticker) { [self] priceData in
                         stockModels[model].currentPrice = priceData?.c
                         stockModels[model].deltaPrice = priceData?.d
                         stockModels[model].percentage = priceData?.dp
+//                        self.group.leave()
                     }
-                    self.delegate?.reloadStocksTableView()
+//                    self.delegate?.reloadStocksTableView()
                 }
                 
             } catch {
@@ -75,7 +81,13 @@ class JSONReader {
         } else {
             print("JSON file not found")
         }
+        group.notify(queue: .main) {
+            print("Entered group notify")
+            self.delegate?.reloadStocksTableView()
+        }
     }
+    
+//    func
     
     func getModel(index: Int) -> stockModel {
         return stockModels[index]
@@ -137,20 +149,6 @@ class JSONReader {
     
     func removeSearchModel() {
         searchModels.removeAll()
-    }
-    
-    func downloadImage(for urlString: String?, completion: @escaping (UIImage?) -> Void) {
-        
-        guard let urlString = urlString else {
-            print("WrongUrl, download Image")
-            completion(UIImage(systemName: "x.square.fill"))
-            return
-        }
-        
-        networkingService.downloadImage(
-            urlString: urlString,
-            completion: completion
-        )
     }
     
     func downloadPriceData(urlString: String?, completion: @escaping (finhubData?) -> Void) {
