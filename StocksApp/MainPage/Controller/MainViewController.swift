@@ -326,6 +326,8 @@ extension MainViewController: JSONReaderDelegate {
 
 /*
 
- 
+ 1) Fix UI
+ 2) Fix logic with favourite button
+ 3) 
  
 */
