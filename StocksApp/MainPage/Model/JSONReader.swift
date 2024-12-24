@@ -87,6 +87,8 @@ class JSONReader {
         }
     }
     
+    
+    
 //    func
     
     func getModel(index: Int) -> stockModel {
