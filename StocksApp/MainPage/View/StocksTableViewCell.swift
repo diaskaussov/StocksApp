@@ -14,7 +14,7 @@ protocol StocksTableViewCellDelegate {
 class StocksTableViewCell: UITableViewCell {
     static let identifier = "StocksTableViewCell"
     
-    var index: Int?
+    private var index: Int?
     var delegate: StocksTableViewCellDelegate?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -105,7 +105,7 @@ class StocksTableViewCell: UITableViewCell {
         delegate?.favouriteStockSelected(state: sender.isSelected, ticker: tickerLabel.text)
     }
     
-    func setButtonColor(_ sender: UIButton) {
+    private func setButtonColor(_ sender: UIButton) {
         if sender.isSelected {
             sender.tintColor = UIColor(
                 red: 254.0/255.0,
@@ -126,21 +126,31 @@ class StocksTableViewCell: UITableViewCell {
         }
     }
     
-    func configure(cellModel: stockModel) {
+    func configure(cellModel: StockModel) {
         photoImageView.image = cellModel.image
         nameLabel.text = cellModel.jsonModel.name
         tickerLabel.text = cellModel.jsonModel.ticker
         
         guard let currentPrice = cellModel.currentPrice else { return }
-        currentPriceLabel.text = "$\(currentPrice)"
+        currentPriceLabel.text = String(format: "$%.2f", currentPrice)
         
         guard let deltaPrice = cellModel.deltaPrice else { return }
-        deltaPriceLabel.text = "$\(deltaPrice)"
+        if deltaPrice >= 0 {
+            deltaPriceLabel.text = String(format: "+$%.2f", deltaPrice)
+            deltaPriceLabel.textColor = UIColor(red: 0, green: 153.0/255.0, blue: 0, alpha: 1)
+            percentageLabel.textColor = UIColor(red: 0, green: 153.0/255.0, blue: 0, alpha: 1)
+        } else {
+            deltaPriceLabel.text = String(format: "-$%.2f", -(deltaPrice))
+            deltaPriceLabel.textColor = UIColor(red: 204.0/255.0, green: 0, blue: 0, alpha: 1)
+            percentageLabel.textColor = UIColor(red: 204.0/255.0, green: 0, blue: 0, alpha: 1)
+        }
+
         
         guard let percentage = cellModel.percentage else { return }
-        percentageLabel.text = "$\(percentage)"
+        percentageLabel.text = String(format: "(%.2f%%)", percentage)
         
         starButton.isSelected = cellModel.isFavourite
+        setButtonColor(starButton)
     }
     
     private func setUI() {
@@ -176,7 +186,7 @@ class StocksTableViewCell: UITableViewCell {
             deltaPriceLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: 20),
             
             nameLabel.leadingAnchor.constraint(equalTo: photoImageView.trailingAnchor, constant: 10),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -100),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.centerXAnchor),
             nameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: 20),
         ])
     }

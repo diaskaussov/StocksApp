@@ -82,7 +82,7 @@ final class MainViewController: UIViewController {
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 36, weight: .bold)
         button.isSelected = true
-        button.addTarget(nil, action: #selector(buttonSelected), for: .touchUpInside)
+        button.addTarget(self, action: #selector(buttonSelected), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -94,7 +94,7 @@ final class MainViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 24, weight: .semibold)
         button.contentHorizontalAlignment = .left
         button.isSelected = false
-        button.addTarget(nil, action: #selector(buttonSelected), for: .touchUpInside)
+        button.addTarget(self, action: #selector(buttonSelected), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -119,7 +119,6 @@ final class MainViewController: UIViewController {
     
     @objc
     private func cancelText(_ sender: UIButton) {
-        print("Hello")
         searchTextField.resignFirstResponder()
     }
     
@@ -143,7 +142,7 @@ final class MainViewController: UIViewController {
 //MARK: - MainViewController SetUp
 
 private extension MainViewController {
-    func setupUI() {
+    private func setupUI() {
         self.navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .white
         addSubViews()
@@ -168,12 +167,12 @@ private extension MainViewController {
         searchTextField.searchTextFielDelegate = self
         searchToolbar.toolbarDelegate = self
         jsonReader.delegate = self
+        
     }
 }
 
 private extension MainViewController {
     func setupLayout() {
-        print("Setup done")
         NSLayoutConstraint.activate([
             searchTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -226,7 +225,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         
         cell.delegate = self
         
-        var stock: stockModel = jsonReader.getModel(index: indexPath.row)
+        var stock: StockModel = jsonReader.getModel(index: indexPath.row)
         
         if favouriteButton.isSelected {
             jsonReader.findFavouriteStocks()
@@ -246,6 +245,14 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 95
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("Hello")
+        tableView.deselectRow(at: indexPath, animated: true)
+        let vc = ChartsViewController(stock: jsonReader.getModel(index: indexPath.row))
+        vc.delegate = self
+        navigationController?.pushViewController(vc, animated: true)
+    }
 }
 
 //MARK: - StocksTableViewCellDelegate
@@ -256,11 +263,17 @@ extension MainViewController: StocksTableViewCellDelegate {
     }
 }
 
-//MARK: -SearchToolBarDelegate
+//MARK: - ChartsViewControllerDelegate
 
-extension MainViewController: SearchToolbarDelegate {
-    func phonePressed() {
-        searchTextField.resignFirstResponder()
+extension MainViewController: ChartsViewControllerDelegate {
+    func changeFavouriteState(ticker: String?, state: Bool) {
+        guard let ticker else { return }
+        print(ticker)
+        print(state)
+        jsonReader.favouriteSelected(ticker: ticker, state: state)
+    }
+    func reloadTableView() {
+        stocksTableView.reloadData()
     }
 }
 
@@ -298,13 +311,12 @@ extension MainViewController: SearchTextFieldDelegate {
         stocksTableView.reloadData()
     }
     
-    func newConstraints() {
+    private func newConstraints() {
         stocksTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 10).isActive = true
         view.layoutIfNeeded()
     }
     
-    func oldConstraints() {
-        print("Old Constraints")
+    private func oldConstraints() {
         stocksTableView.removeFromSuperview()
         view.addSubview(stocksTableView)
         NSLayoutConstraint.activate([
@@ -316,6 +328,16 @@ extension MainViewController: SearchTextFieldDelegate {
     }
 }
 
+//MARK: -SearchToolBarDelegate
+
+extension MainViewController: SearchToolbarDelegate {
+    func phonePressed() {
+        searchTextField.resignFirstResponder()
+    }
+}
+
+//MARK: -JSONReaderDelegate
+
 extension MainViewController: JSONReaderDelegate {
     func reloadStocksTableView() {
         DispatchQueue.main.async {
@@ -325,9 +347,11 @@ extension MainViewController: JSONReaderDelegate {
 }
 
 /*
-
- 1) Fix UI
+ 1) Fix UI - done
  2) Fix logic with favourite button
- 3) 
- 
+ 3) Start 2nd page
+    i) New ViewController
+    ii) Make transition Main -> ChartsViewController
+    iii) Start UI
+ 4) Read artickles about MVP
 */

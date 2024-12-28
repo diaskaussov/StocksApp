@@ -33,7 +33,6 @@ class NetworkingService {
             guard let data = data else { return }
             
             if let image = UIImage(data: data) {
-                print("Got UIImage")
                 completion(image)
                 return
             }

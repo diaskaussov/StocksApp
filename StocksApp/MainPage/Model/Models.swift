@@ -19,7 +19,7 @@ struct finhubData: Codable {
     let dp: Double // percentage
 }
 
-struct stockModel {
+struct StockModel {
     var jsonModel: jsonModel
     var image: UIImage? = nil
     var currentPrice: Double? = nil

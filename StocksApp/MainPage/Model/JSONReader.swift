@@ -11,11 +11,11 @@ protocol JSONReaderDelegate {
 }
 
 class JSONReader {
-    var stockModels: [stockModel] = []
+    var stockModels: [StockModel] = []
     
-    var favouriteModels: [stockModel] = []
+    var favouriteModels: [StockModel] = []
     
-    var searchModels: [stockModel] = []
+    var searchModels: [StockModel] = []
     
     var delegate: JSONReaderDelegate?
     
@@ -25,7 +25,6 @@ class JSONReader {
     
     init() {
         readJson()
-        print(stockModels)
     }
     
     var group = DispatchGroup()
@@ -39,7 +38,7 @@ class JSONReader {
                 let models = try JSONDecoder().decode([jsonModel].self, from: data)
                 
                 for model in 0...20 {
-                    self.stockModels.append(stockModel(jsonModel: models[model]))
+                    self.stockModels.append(StockModel(jsonModel: models[model]))
                     group.enter()
                     networkingService.downloadImage(urlString: stockModels[model].jsonModel.logo) { image in
                         self.stockModels[model].image = image
@@ -68,7 +67,7 @@ class JSONReader {
     
 //    func
     
-    func getModel(index: Int) -> stockModel {
+    func getModel(index: Int) -> StockModel {
         return stockModels[index]
     }
     
@@ -116,7 +115,9 @@ class JSONReader {
     }
     
     func favouriteSelected(ticker: String?, state: Bool) {
-        guard let ticker = ticker else { return }
+        guard let ticker else { return }
+        
+        print("Entered favouriteSelected with ticker: \(ticker) and state: \(state)")
         
         for i in 0...stockModels.count {
             if stockModels[i].jsonModel.ticker == ticker {
