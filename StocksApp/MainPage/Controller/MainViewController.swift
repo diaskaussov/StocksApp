@@ -99,6 +99,40 @@ final class MainViewController: UIViewController {
         return button
     }()
     
+    private let labelPopularRequests: UILabel = {
+        let label = UILabel()
+        label.text = "Popular requests"
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 24, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let searchedItemsLabel: UILabel = {
+        let label = UILabel()
+        label.text = "You've searched for this"
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 24, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let stack1PopularRequests: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 10
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
+    private let stack2PopularRequests: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 10
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
     @objc
     private func buttonSelected(_ sender: UIButton) {
         guard let title = sender.titleLabel?.text else { return }
@@ -284,11 +318,12 @@ extension MainViewController: SearchTextFieldDelegate {
     func textFieldDidBeginEditing(textField: UITextField) {
         stocksButton.isHidden = true
         favouriteButton.isHidden = true
-        newConstraints()
-        stocksTableView.reloadData()
+        
     }
     
     func textFieldDidChanged(textField: UITextField) {
+        newConstraints()
+        stocksTableView.reloadData()
         guard let string = textField.text else { return }
         let newString = Array(string.uppercased())
         jsonReader.findSearchStocks(newString: newString)
@@ -309,6 +344,10 @@ extension MainViewController: SearchTextFieldDelegate {
             view.layoutSubviews()
         }
         stocksTableView.reloadData()
+    }
+    
+    private func searchView() {
+        
     }
     
     private func newConstraints() {

@@ -2,24 +2,26 @@
 //  ChartButton.swift
 //  StocksApp
 //
-//  Created by Dias Kaussov on 27.12.2024.
+//  Created by Dias Kaussov on 30.12.2024.
 //
 
 import UIKit
 
 class ChartButton: UIButton {
-    init(title: String) {
+    init(name: String) {
         super.init(frame: .zero)
-        setProperties(title: title)
+        setProperties(name: name)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func setProperties(title: String) {
-        setTitle(title, for: .normal)
+    private func setProperties(name: String) {
+        setTitle(name, for: .normal)
+        titleLabel?.font = .systemFont(ofSize: 16)
+        backgroundColor = .systemGray6
         setTitleColor(.black, for: .normal)
-        translatesAutoresizingMaskIntoConstraints = false
+        layer.cornerRadius = 16
     }
 }
