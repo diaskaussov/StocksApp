@@ -55,6 +55,7 @@ final class MainViewController: UIViewController {
             for: .normal
         )
         button.tintColor = .black
+        button.addTarget(nil, action: #selector(startSearch), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -162,6 +163,11 @@ final class MainViewController: UIViewController {
             weight: .semibold
         )
         sender.setTitleColor(.gray, for: .normal)
+    }
+    
+    @objc
+    private func startSearch(_ sender: UIButton) {
+        searchTextField.becomeFirstResponder() //resign ??
     }
     
     private func makeFontSelected(_ sender: UIButton) {
@@ -314,6 +320,9 @@ extension MainViewController: ChartsViewControllerDelegate {
 //MARK: - SearchTextFieldDelegate
 
 extension MainViewController: SearchTextFieldDelegate {
+    func textFieldShouldReturn(textField: UITextField) {
+        textField.resignFirstResponder()
+    }
     
     func textFieldDidBeginEditing(textField: UITextField) {
         stocksButton.isHidden = true

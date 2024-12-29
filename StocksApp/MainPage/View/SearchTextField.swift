@@ -11,6 +11,7 @@ protocol SearchTextFieldDelegate {
     func textFieldDidBeginEditing(textField: UITextField)
     func textFieldDidChanged(textField: UITextField)
     func textFieldDidEndEditing(textField: UITextField)
+    func textFieldShouldReturn(textField: UITextField)
 }
 
 class SearchTextField: UITextField {
@@ -55,6 +56,7 @@ class SearchTextField: UITextField {
         textColor = .black
         layer.cornerRadius = 24
         layer.borderWidth = 1
+        returnKeyType = .done
         layer.borderColor = CGColor(
             red: 0,
             green: 0,
@@ -74,6 +76,7 @@ class SearchTextField: UITextField {
         self.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         self.addTarget(self, action: #selector(textFieldDidEndEditing(_:)), for: .editingDidEnd)
         self.addTarget(self, action: #selector(textFieldShouldReturn(_:)), for: .primaryActionTriggered)
+        self.addTarget(self, action: #selector(textFieldShouldReturn), for: .primaryActionTriggered)
         
         setViews()
         setupButton(leftButton: leftButton, rightButton: rightButton)
@@ -131,6 +134,6 @@ class SearchTextField: UITextField {
     }
     @objc
     private func textFieldShouldReturn(_ textField: UITextField) {
-        
+        searchTextFielDelegate?.textFieldShouldReturn(textField: self)
     }
 }
