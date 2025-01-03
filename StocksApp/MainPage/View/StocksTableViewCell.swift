@@ -11,7 +11,7 @@ protocol StocksTableViewCellDelegate {
     func favouriteStockSelected(state: Bool, ticker: String?)
 }
 
-class StocksTableViewCell: UITableViewCell {
+final class StocksTableViewCell: UITableViewCell {
     static let identifier = "StocksTableViewCell"
     
     private var index: Int?

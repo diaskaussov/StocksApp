@@ -7,7 +7,7 @@
 
 import UIKit
 
-class NetworkingService {
+final class NetworkingService {
     
     //Finhub API Key: ctekv9hr01qt478m7utgctekv9hr01qt478m7uu0
     //Secret: ctekv9hr01qt478m7uv0

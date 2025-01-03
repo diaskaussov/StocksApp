@@ -10,7 +10,7 @@ protocol JSONReaderDelegate {
     func reloadStocksTableView()
 }
 
-class JSONReader {
+final class JSONReader {
     var stockModels: [StockModel] = []
     
     var favouriteModels: [StockModel] = []

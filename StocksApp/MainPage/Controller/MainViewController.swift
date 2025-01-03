@@ -8,21 +8,30 @@
 import UIKit
 
 final class MainViewController: UIViewController {
-    var number = 20
+    var lowerIndex = 0
+    var upperIndex = 20
+    
     private let jsonReader = JSONReader()
-    private lazy var searchToolbar = SearchToolbar()
+    
+    private lazy var popularRequestsView = SearchPopularRequestsPage(stocks: jsonReader.stockModels)
+    
     private lazy var searchTextField =
     SearchTextField(
         placeholder: "Find company or ticker",
         leftButton: searchButton,
-        rightButton: cancelButton,
-        toolbar: searchToolbar
+        rightButton: cancelButton
     )
+   
     private var isSearching = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        stocksTableView.reloadData()
     }
     
     private let stocksTableView: UITableView = {
@@ -100,40 +109,6 @@ final class MainViewController: UIViewController {
         return button
     }()
     
-    private let labelPopularRequests: UILabel = {
-        let label = UILabel()
-        label.text = "Popular requests"
-        label.textColor = .black
-        label.font = .systemFont(ofSize: 24, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let searchedItemsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "You've searched for this"
-        label.textColor = .black
-        label.font = .systemFont(ofSize: 24, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let stack1PopularRequests: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
-    private let stack2PopularRequests: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
     @objc
     private func buttonSelected(_ sender: UIButton) {
         guard let title = sender.titleLabel?.text else { return }
@@ -167,7 +142,7 @@ final class MainViewController: UIViewController {
     
     @objc
     private func startSearch(_ sender: UIButton) {
-        searchTextField.becomeFirstResponder() //resign ??
+        searchTextField.resignFirstResponder() //resign ??
     }
     
     private func makeFontSelected(_ sender: UIButton) {
@@ -198,16 +173,13 @@ private extension MainViewController {
         view.addSubview(stocksTableView)
         buttonView.addSubview(stocksButton)
         buttonView.addSubview(favouriteButton)
-        searchTextField.inputAccessoryView = searchToolbar
     }
     
     private func setDelegates() {
         stocksTableView.delegate = self
         stocksTableView.dataSource = self
         searchTextField.searchTextFielDelegate = self
-        searchToolbar.toolbarDelegate = self
         jsonReader.delegate = self
-        
     }
 }
 
@@ -251,8 +223,14 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         } else if isSearching {
             return jsonReader.getNumberOfSearchingCells()
         }
-        return number
+        return upperIndex - lowerIndex + 1
         
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row + 1 == tableView.numberOfRows(inSection: 0) {
+            
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -261,20 +239,11 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
             for: indexPath
         ) as? StocksTableViewCell else { fatalError("Error dequeueing cell") }
         
-        cell.setBackground(even: indexPath.row % 2 == 0)
-        
         cell.delegate = self
         
-        var stock: StockModel = jsonReader.getModel(index: indexPath.row)
+        cell.setBackground(even: indexPath.row % 2 == 0)
         
-        if favouriteButton.isSelected {
-            jsonReader.findFavouriteStocks()
-            stock = jsonReader.favouriteModels[indexPath.row]
-        }
-        
-        if jsonReader.searchModels.isEmpty == false {
-            stock = jsonReader.searchModels[indexPath.row]
-        }
+        let stock = getStock(index: indexPath.row)
         
         cell.configure(cellModel: stock)
         
@@ -287,11 +256,23 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("Hello")
         tableView.deselectRow(at: indexPath, animated: true)
-        let vc = ChartsViewController(stock: jsonReader.getModel(index: indexPath.row))
+        let stock = getStock(index: indexPath.row)
+        let presenter = ChartsPresenter(stock: stock)
+        let vc = ChartsViewController(presenter: presenter)
         vc.delegate = self
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func getStock(index: Int) -> StockModel {
+        if favouriteButton.isSelected {
+            jsonReader.findFavouriteStocks()
+            return jsonReader.favouriteModels[index]
+        } else if jsonReader.searchModels.isEmpty == false {
+            return jsonReader.searchModels[index]
+        } else {
+            return jsonReader.getModel(index: index)
+        }
     }
 }
 
@@ -303,20 +284,6 @@ extension MainViewController: StocksTableViewCellDelegate {
     }
 }
 
-//MARK: - ChartsViewControllerDelegate
-
-extension MainViewController: ChartsViewControllerDelegate {
-    func changeFavouriteState(ticker: String?, state: Bool) {
-        guard let ticker else { return }
-        print(ticker)
-        print(state)
-        jsonReader.favouriteSelected(ticker: ticker, state: state)
-    }
-    func reloadTableView() {
-        stocksTableView.reloadData()
-    }
-}
-
 //MARK: - SearchTextFieldDelegate
 
 extension MainViewController: SearchTextFieldDelegate {
@@ -325,46 +292,65 @@ extension MainViewController: SearchTextFieldDelegate {
     }
     
     func textFieldDidBeginEditing(textField: UITextField) {
-        stocksButton.isHidden = true
-        favouriteButton.isHidden = true
-        
+        if textField.hasText {
+            hidePopularRequestsView()
+            setSearchView(textField: textField)
+        } else {
+            setPopularRequestsView()
+        }
     }
     
     func textFieldDidChanged(textField: UITextField) {
-        newConstraints()
-        stocksTableView.reloadData()
-        guard let string = textField.text else { return }
-        let newString = Array(string.uppercased())
-        jsonReader.findSearchStocks(newString: newString)
-        isSearching = true
-        stocksTableView.reloadData()
+        if searchTextField.hasText {
+            hidePopularRequestsView()
+            setSearchView(textField: textField)
+        } else {
+            setPopularRequestsView()
+        }
     }
     
     func textFieldDidEndEditing(textField: UITextField) {
         if searchTextField.hasText {
-            isSearching = true
+            setSearchView(textField: textField)
         } else {
-            isSearching = false
-            jsonReader.removeSearchModel()
-            stocksButton.isHidden = false
-            favouriteButton.isHidden = false
-            oldConstraints()
-            view.layoutIfNeeded()
-            view.layoutSubviews()
+            hidePopularRequestsView()
+            backToMainPage()
         }
         stocksTableView.reloadData()
     }
-    
-    private func searchView() {
-        
+}
+
+//MARK: - Set Searching View
+
+extension MainViewController {
+    private func setSearchView(textField: UITextField) {
+        setNewConstraintsStocksTableView()
+        isSearching = true
+        guard let string = textField.text else { return }
+        let newString = Array(string.uppercased())
+        jsonReader.findSearchStocks(newString: newString)
+        stocksTableView.reloadData()
     }
     
-    private func newConstraints() {
-        stocksTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 10).isActive = true
-        view.layoutIfNeeded()
+    private func backToMainPage() {
+        isSearching = false
+        jsonReader.removeSearchModel()
+        stocksButton.isHidden = false
+        favouriteButton.isHidden = false
+        setOldConstraintsStocksTableView()
     }
     
-    private func oldConstraints() {
+    private func setNewConstraintsStocksTableView() {
+        view.addSubview(stocksTableView)
+        NSLayoutConstraint.activate([
+            stocksTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 10),
+            stocksTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            stocksTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            stocksTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+    
+    private func setOldConstraintsStocksTableView() {
         stocksTableView.removeFromSuperview()
         view.addSubview(stocksTableView)
         NSLayoutConstraint.activate([
@@ -373,18 +359,33 @@ extension MainViewController: SearchTextFieldDelegate {
             stocksTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             stocksTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        view.layoutIfNeeded()
+        view.layoutSubviews()
     }
 }
 
-//MARK: -SearchToolBarDelegate
+//MARK: - Set Popular Requests View
 
-extension MainViewController: SearchToolbarDelegate {
-    func phonePressed() {
-        searchTextField.resignFirstResponder()
+extension MainViewController {
+    private func setPopularRequestsView() {
+        stocksButton.isHidden = true
+        favouriteButton.isHidden = true
+        stocksTableView.removeFromSuperview()
+        view.addSubview(popularRequestsView)
+        NSLayoutConstraint.activate([
+            popularRequestsView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 40),
+            popularRequestsView.leadingAnchor.constraint(equalTo: searchTextField.leadingAnchor),
+            popularRequestsView.trailingAnchor.constraint(equalTo: searchTextField.trailingAnchor),
+            popularRequestsView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+    
+    private func hidePopularRequestsView() {
+        popularRequestsView.removeFromSuperview()
     }
 }
 
-//MARK: -JSONReaderDelegate
+//MARK: - JSONReaderDelegate
 
 extension MainViewController: JSONReaderDelegate {
     func reloadStocksTableView() {
@@ -394,12 +395,25 @@ extension MainViewController: JSONReaderDelegate {
     }
 }
 
+
+//MARK: - ChartsViewControllerDelegate
+
+extension MainViewController: ChartsViewControllerDelegate {
+    func changeFavouriteState(ticker: String?, state: Bool) {
+        guard let ticker else { return }
+        jsonReader.favouriteSelected(ticker: ticker, state: state)
+    }
+    func reloadTableView() {
+        stocksTableView.reloadData()
+    }
+}
+
 /*
- 1) Fix UI - done
- 2) Fix logic with favourite button
- 3) Start 2nd page
-    i) New ViewController
-    ii) Make transition Main -> ChartsViewController
-    iii) Start UI
- 4) Read artickles about MVP
+ Questions:
+ 2) CancelButton & SearchButton - ?
+ 6) StackView or CollectionView (Search) - StackView
+ 7) MVP?, refactoring?
+ 7) Persistence
+ 8) Core Data
+ 9) Chart
 */

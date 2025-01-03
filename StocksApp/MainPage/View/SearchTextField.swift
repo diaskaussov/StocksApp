@@ -14,20 +14,19 @@ protocol SearchTextFieldDelegate {
     func textFieldShouldReturn(textField: UITextField)
 }
 
-class SearchTextField: UITextField {
+final class SearchTextField: UITextField {
     private let padding = UIEdgeInsets(top: 0, left: 45, bottom: 0, right: 0)
     private let leftViewContainer = UIView()
     private let rightViewContainer = UIView()
     
     var searchTextFielDelegate: SearchTextFieldDelegate?
     
-    init(placeholder: String, leftButton: UIButton, rightButton: UIButton, toolbar: UIToolbar) {
+    init(placeholder: String, leftButton: UIButton, rightButton: UIButton) {
         super.init(frame: .zero)
         setupLayout(
             placeholder: placeholder,
             leftButton: leftButton,
-            rightButton: rightButton,
-            toolbar: toolbar
+            rightButton: rightButton
         )
     }
     
@@ -50,8 +49,7 @@ class SearchTextField: UITextField {
     private func setupLayout(
         placeholder: String,
         leftButton: UIButton,
-        rightButton: UIButton,
-        toolbar: UIToolbar
+        rightButton: UIButton
     ) {
         textColor = .black
         layer.cornerRadius = 24
@@ -63,20 +61,20 @@ class SearchTextField: UITextField {
             blue: 0,
             alpha: 1
         )
-        self.attributedPlaceholder = NSAttributedString(
+        
+        attributedPlaceholder = NSAttributedString(
             string: placeholder,
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.black]
         )
         
-        self.translatesAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
         leftButton.translatesAutoresizingMaskIntoConstraints = false
         rightButton.translatesAutoresizingMaskIntoConstraints = false
         
-        self.addTarget(self, action: #selector(textFieldDidBeginEditing(_:)), for: .editingDidBegin)
-        self.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        self.addTarget(self, action: #selector(textFieldDidEndEditing(_:)), for: .editingDidEnd)
-        self.addTarget(self, action: #selector(textFieldShouldReturn(_:)), for: .primaryActionTriggered)
-        self.addTarget(self, action: #selector(textFieldShouldReturn), for: .primaryActionTriggered)
+        addTarget(self, action: #selector(textFieldDidBeginEditing(_:)), for: .editingDidBegin)
+        addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        addTarget(self, action: #selector(textFieldDidEndEditing(_:)), for: .editingDidEnd)
+        addTarget(self, action: #selector(textFieldShouldReturn(_:)), for: .primaryActionTriggered)
         
         setViews()
         setupButton(leftButton: leftButton, rightButton: rightButton)
@@ -85,18 +83,18 @@ class SearchTextField: UITextField {
     private func setViews() {
         leftViewContainer.translatesAutoresizingMaskIntoConstraints = false
         leftViewContainer.isUserInteractionEnabled = true
-        self.leftViewMode = UITextField.ViewMode.always
-        self.leftView = leftViewContainer
+        leftViewMode = UITextField.ViewMode.always
+        leftView = leftViewContainer
         
         rightViewContainer.translatesAutoresizingMaskIntoConstraints = false
         rightViewContainer.isUserInteractionEnabled = true
-        self.rightViewMode = UITextField.ViewMode.always
-        self.rightView = rightViewContainer
+        rightViewMode = UITextField.ViewMode.always
+        rightView = rightViewContainer
     }
     
     private func setupButton(leftButton: UIButton, rightButton: UIButton) {
-        self.addSubview(leftViewContainer)
-        self.addSubview(rightViewContainer)
+        addSubview(leftViewContainer)
+        addSubview(rightViewContainer)
         leftViewContainer.addSubview(leftButton)
         rightViewContainer.addSubview(rightButton)
         

@@ -7,16 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "EB118FDF-42D0-43B7-B8AD-56303F1F7524"
-            shouldBeEnabled = "No"
+            uuid = "7D640901-6642-4F29-A48D-92DFC279C07A"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "StocksApp/MainPage/Controller/MainViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "279"
-            endingLineNumber = "279"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "407"
+            endingLineNumber = "407"
+            landmarkName = "reloadTableView()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
