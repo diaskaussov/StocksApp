@@ -21,7 +21,7 @@ final class JSONReader {
     
     let networkingService = NetworkingService()
     
-    let baseUrl = "https://finnhub.io/api/v1/quote?token=ctekv9hr01qt478m7utgctekv9hr01qt478m7uu0&symbol="
+    private let baseUrl = "https://finnhub.io/api/v1/quote?token=ctekv9hr01qt478m7utgctekv9hr01qt478m7uu0&symbol="
     
     init() {
         readJson()
@@ -44,13 +44,14 @@ final class JSONReader {
                         self.stockModels[model].image = image
                         self.group.leave()
                     }
-                    downloadPriceData(urlString: stockModels[model].jsonModel.ticker) { [self] priceData in
+                    
+                    let url = baseUrl + stockModels[model].jsonModel.ticker
+                    
+                    networkingService.downloadPriceData(urlString: url) { [self] priceData in
                         stockModels[model].currentPrice = priceData?.c
                         stockModels[model].deltaPrice = priceData?.d
                         stockModels[model].percentage = priceData?.dp
-//                        self.group.leave()
                     }
-//                    self.delegate?.reloadStocksTableView()
                 }
                 
             } catch {
@@ -64,8 +65,6 @@ final class JSONReader {
             self.delegate?.reloadStocksTableView()
         }
     }
-    
-//    func
     
     func getModel(index: Int) -> StockModel {
         return stockModels[index]
@@ -129,21 +128,6 @@ final class JSONReader {
     
     func removeSearchModel() {
         searchModels.removeAll()
-    }
-    
-    func downloadPriceData(urlString: String?, completion: @escaping (finhubData?) -> Void) {
-        
-        guard let ticker = urlString else {
-            print("WrongUrl, downloadPriceData")
-            completion(nil)
-            return
-        }
-        
-        let url = baseUrl + ticker
-        networkingService.downloadPriceData(
-            urlString: url,
-            completion: completion
-        )
     }
 }
 

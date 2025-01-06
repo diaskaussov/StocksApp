@@ -1,6 +1,5 @@
 import UIKit
-import Charts
-//import TinyConstraints
+import DGCharts
 
 protocol ChartsViewControllerDelegate {
     func changeFavouriteState(ticker: String?, state: Bool)
@@ -30,7 +29,11 @@ final class ChartsViewController: UIViewController {
     
     private let lineChartView: LineChartView = {
         let view = LineChartView()
-        view.backgroundColor = .red
+        view.rightAxis.enabled = false
+        view.leftAxis.enabled = false
+        view.xAxis.enabled = false
+        view.chartDescription.enabled = false
+        view.legend.enabled = false
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -39,7 +42,7 @@ final class ChartsViewController: UIViewController {
     
     private let menuView = MenuView()
     
-    private let chartView = ChartView()
+    private let chartButtonsView = ChartButtonsView()
     
     private lazy var buyButton: UIButton = {
         let button = UIButton()
@@ -69,6 +72,26 @@ final class ChartsViewController: UIViewController {
     private func backToMainViewController(sender: UIButton) {
         navigationController?.popViewController(animated: true)
     }
+    
+    let y: [ChartDataEntry] = [
+        ChartDataEntry(x: 0.0, y: 2.0),
+        ChartDataEntry(x: 1.0, y: 3.0),
+        ChartDataEntry(x: 2.0, y: 4.0),
+        ChartDataEntry(x: 3.0, y: 25.0),
+        ChartDataEntry(x: 4.0, y: 212.0),
+        ChartDataEntry(x: 5.0, y: 2.0),
+        ChartDataEntry(x: 6.0, y: 211.0),
+        ChartDataEntry(x: 7.0, y: 23.0),
+        ChartDataEntry(x: 8.0, y: 5.0),
+        ChartDataEntry(x: 9.0, y: 6.0),
+        ChartDataEntry(x: 10.0, y: 223.0),
+        ChartDataEntry(x: 11.0, y: 35.0),
+        ChartDataEntry(x: 12.0, y: 46.0),
+        ChartDataEntry(x: 13.0, y: 23.0),
+        ChartDataEntry(x: 14.0, y: 53.0),
+        ChartDataEntry(x: 15.0, y: 78.0)
+    ]
+
 }
 
 extension ChartsViewController {
@@ -77,13 +100,15 @@ extension ChartsViewController {
         topView.stockName.text = presenter.getStockName()
         topView.starButton.isSelected = presenter.getStockState()
         topView.starButton.tintColor = presenter.getStarButtonColor(sender: topView.starButton.isSelected)
+        setData()
+        presenter.getStockPrices()
     }
     
     private func addSubViews() {
         view.addSubview(topView)
         view.addSubview(lineChartView)
         view.addSubview(menuView)
-        view.addSubview(chartView)
+        view.addSubview(chartButtonsView)
         view.addSubview(buyButton)
     }
     
@@ -99,23 +124,44 @@ extension ChartsViewController {
             menuView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             menuView.heightAnchor.constraint(equalToConstant: 50),
             
-            lineChartView.topAnchor.constraint(equalTo: menuView.bottomAnchor, constant: 20),
-            lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            lineChartView.heightAnchor.constraint(equalToConstant: 100),
-            
             buyButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
             buyButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             buyButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             buyButton.heightAnchor.constraint(equalToConstant: 60),
             
-            chartView.bottomAnchor.constraint(equalTo: buyButton.topAnchor, constant: -50),
-            chartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            chartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            chartView.heightAnchor.constraint(equalToConstant: 50)
+            chartButtonsView.bottomAnchor.constraint(equalTo: buyButton.topAnchor, constant: -50),
+            chartButtonsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            chartButtonsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            chartButtonsView.heightAnchor.constraint(equalToConstant: 50),
+            
+            lineChartView.bottomAnchor.constraint(equalTo: chartButtonsView.topAnchor, constant: -40),
+            lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            lineChartView.heightAnchor.constraint(equalToConstant: 200),
         ])
     }
     
+}
+
+extension ChartsViewController: ChartViewDelegate {
+    func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
+        print(entry)
+    }
+    
+    func setData() {
+        let set1 = LineChartDataSet(entries: y, label: "")
+        set1.mode = .cubicBezier
+        set1.drawCirclesEnabled = false
+        set1.lineWidth = 2
+        set1.setColor(.black)
+        set1.fillColor = .gray
+        set1.fillAlpha = 0.05
+        set1.drawFilledEnabled = true
+        
+        let data = LineChartData(dataSets: [set1])
+        data.setDrawValues(false)
+        lineChartView.data = data
+    }
 }
 /*
 

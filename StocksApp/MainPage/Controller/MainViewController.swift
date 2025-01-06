@@ -281,6 +281,9 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
 extension MainViewController: StocksTableViewCellDelegate {
     func favouriteStockSelected(state: Bool, ticker: String?) {
         jsonReader.favouriteSelected(ticker: ticker, state: state)
+        if isSearching {
+            setSearchView(textField: searchTextField)
+        }
     }
 }
 
@@ -402,11 +405,16 @@ extension MainViewController: ChartsViewControllerDelegate {
     func changeFavouriteState(ticker: String?, state: Bool) {
         guard let ticker else { return }
         jsonReader.favouriteSelected(ticker: ticker, state: state)
-    }
-    func reloadTableView() {
-        stocksTableView.reloadData()
+        if isSearching {
+            setSearchView(textField: searchTextField)
+        }
     }
 }
+
+// Class vs Stucts
+// Stack vs Heap
+// Reference & Value type
+
 
 /*
  Questions:

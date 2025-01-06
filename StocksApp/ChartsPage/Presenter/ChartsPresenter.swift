@@ -8,7 +8,8 @@ import UIKit
 
 final class ChartsPresenter {
     private let stock: StockModel
-    
+    private let baseUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&apikey=VXF5G7TO55GS43OD&symbol="
+    private let chartNetworkingService = ChartsNetworkingService()
     init(stock: StockModel) {
         self.stock = stock
     }
@@ -41,5 +42,15 @@ final class ChartsPresenter {
     func getCurrentPrice() -> Double {
         guard let currentPrice = stock.currentPrice else { return 0.0 }
         return currentPrice
+    }
+    
+    func getStockPrices() {
+        let url = baseUrl + stock.jsonModel.ticker
+        chartNetworkingService.downloadPriceData(urlString: url) { stockData in
+            print("Hello")
+            print(stockData)
+            guard let stockData else { return }
+            print("getStockModel: " + "\(stockData.dailyData[0].stockTimeSeries.close)")
+        }
     }
 }
