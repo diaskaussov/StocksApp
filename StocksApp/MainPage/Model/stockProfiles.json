@@ -75,11 +75,6 @@
     "ticker": "ALLE"
   },
   {
-    "name": "Alexion Pharmaceuticals Inc",
-    "logo": "https://finnhub.io/api/logo?symbol=ALXN",
-    "ticker": "ALXN"
-  },
-  {
     "name": "Amcor PLC",
     "logo": "https://finnhub.io/api/logo?symbol=AMCR",
     "ticker": "AMCR"
