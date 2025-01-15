@@ -13,7 +13,7 @@ final class MainViewController: UIViewController {
     
     private let jsonReader = JSONReader()
     
-    private lazy var popularRequestsView = SearchPopularRequestsPage(stocks: jsonReader.stockModels)
+    private lazy var popularRequestsPage = SearchPopularRequestsPage(stocks: jsonReader.stockModels)
     
     private lazy var searchTextField =
     SearchTextField(
@@ -130,6 +130,10 @@ final class MainViewController: UIViewController {
     @objc
     private func cancelText(_ sender: UIButton) {
         searchTextField.resignFirstResponder()
+        searchTextField.text = ""
+        hidePopularRequestsView()
+        backToMainPage()
+        stocksTableView.reloadData()
     }
     
     private func makeFontDefault(_ sender: UIButton) {
@@ -142,7 +146,7 @@ final class MainViewController: UIViewController {
     
     @objc
     private func startSearch(_ sender: UIButton) {
-        searchTextField.resignFirstResponder() //resign ??
+        searchTextField.becomeFirstResponder()
     }
     
     private func makeFontSelected(_ sender: UIButton) {
@@ -180,6 +184,7 @@ private extension MainViewController {
         stocksTableView.dataSource = self
         searchTextField.searchTextFielDelegate = self
         jsonReader.delegate = self
+        popularRequestsPage.searchPopularRequestsPageDelegate = self
     }
 }
 
@@ -227,11 +232,12 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         
     }
     
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row + 1 == tableView.numberOfRows(inSection: 0) {
-            
-        }
-    }
+//    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+//        if indexPath.row + 1 == tableView.numberOfRows(inSection: 0) {
+//            lowerIndex = upperIndex
+//            upperIndex += 20
+//            stocksTableView.reloadData()
+//    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
@@ -330,7 +336,7 @@ extension MainViewController {
         setNewConstraintsStocksTableView()
         isSearching = true
         guard let string = textField.text else { return }
-        let newString = Array(string.uppercased())
+        let newString = Array(string.lowercased())
         jsonReader.findSearchStocks(newString: newString)
         stocksTableView.reloadData()
     }
@@ -374,17 +380,26 @@ extension MainViewController {
         stocksButton.isHidden = true
         favouriteButton.isHidden = true
         stocksTableView.removeFromSuperview()
-        view.addSubview(popularRequestsView)
+        view.addSubview(popularRequestsPage)
         NSLayoutConstraint.activate([
-            popularRequestsView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 40),
-            popularRequestsView.leadingAnchor.constraint(equalTo: searchTextField.leadingAnchor),
-            popularRequestsView.trailingAnchor.constraint(equalTo: searchTextField.trailingAnchor),
-            popularRequestsView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            popularRequestsPage.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 40),
+            popularRequestsPage.leadingAnchor.constraint(equalTo: searchTextField.leadingAnchor),
+            popularRequestsPage.trailingAnchor.constraint(equalTo: searchTextField.trailingAnchor),
+            popularRequestsPage.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
     
     private func hidePopularRequestsView() {
-        popularRequestsView.removeFromSuperview()
+        popularRequestsPage.removeFromSuperview()
+    }
+}
+
+extension MainViewController: SearchPopularRequestsPageDelegate {
+    func searchForTheCompanyByTitle(title: String) {
+        searchTextField.text = title
+        isSearching = true
+        textFieldDidChanged(textField: searchTextField)
+        stocksTableView.reloadData()
     }
 }
 
@@ -411,17 +426,9 @@ extension MainViewController: ChartsViewControllerDelegate {
     }
 }
 
-// Class vs Stucts
-// Stack vs Heap
-// Reference & Value type
-
-
 /*
  Questions:
- 2) CancelButton & SearchButton - ?
- 6) StackView or CollectionView (Search) - StackView
- 7) MVP?, refactoring?
- 7) Persistence
- 8) Core Data
- 9) Chart
-*/
+    1. Infinite Scroll
+    2. IntraDay
+    3. CoreData
+ */

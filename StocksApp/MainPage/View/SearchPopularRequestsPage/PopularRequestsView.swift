@@ -7,9 +7,15 @@
 
 import UIKit
 
+protocol PopularRequestsViewDelegate {
+    func textReceived(text: String)
+}
+
 final class PopularRequestsView: UIView {
     
     private var stocks: [StockModel]
+    
+    var popularRequestsViewDelegate: PopularRequestsViewDelegate?
     
     init(stocks: [StockModel]) {
         self.stocks = stocks
@@ -25,15 +31,18 @@ final class PopularRequestsView: UIView {
     private let scroll1PopularRequests: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.bounces = false
         return scrollView
     }()
     
     private let scroll2PopularRequests: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.isUserInteractionEnabled = true
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.bounces = false
         return scrollView
     }()
     
@@ -60,8 +69,13 @@ final class PopularRequestsView: UIView {
         scroll1PopularRequests.addSubview(stack1PopularRequests)
         scroll2PopularRequests.addSubview(stack2PopularRequests)
         for model in 0..<20 {
-            stack1PopularRequests.addArrangedSubview(PopularRequestsButton(text: stocks[model].jsonModel.name))
-            stack2PopularRequests.addArrangedSubview(PopularRequestsButton(text: stocks[model].jsonModel.name))
+            let button1 = PopularRequestsButton(text: stocks[model].jsonModel.name)
+            button1.popularRequestsButtonDelegate = self
+            stack1PopularRequests.addArrangedSubview(button1)
+
+            let button2 = PopularRequestsButton(text: stocks[model].jsonModel.name)
+            button2.popularRequestsButtonDelegate = self
+            stack2PopularRequests.addArrangedSubview(button2)
         }
     }
     
@@ -74,8 +88,7 @@ final class PopularRequestsView: UIView {
             scroll1PopularRequests.heightAnchor.constraint(equalToConstant: 40),
             
             stack1PopularRequests.topAnchor.constraint(
-                equalTo: scroll1PopularRequests.contentLayoutGuide.topAnchor,
-                constant: 5
+                equalTo: scroll1PopularRequests.contentLayoutGuide.topAnchor
             ),
             stack1PopularRequests.leadingAnchor.constraint(
                 equalTo: scroll1PopularRequests.contentLayoutGuide.leadingAnchor
@@ -84,8 +97,7 @@ final class PopularRequestsView: UIView {
                 equalTo: scroll1PopularRequests.contentLayoutGuide.trailingAnchor
             ),
             stack1PopularRequests.bottomAnchor.constraint(
-                equalTo: scroll1PopularRequests.contentLayoutGuide.bottomAnchor,
-                constant: -5
+                equalTo: scroll1PopularRequests.contentLayoutGuide.bottomAnchor
             ),
             
             scroll2PopularRequests.topAnchor.constraint(equalTo: scroll1PopularRequests.bottomAnchor, constant: 10),
@@ -94,8 +106,7 @@ final class PopularRequestsView: UIView {
             scroll2PopularRequests.heightAnchor.constraint(equalToConstant: 40),
             
             stack2PopularRequests.topAnchor.constraint(
-                equalTo: scroll2PopularRequests.contentLayoutGuide.topAnchor,
-                constant: 5
+                equalTo: scroll2PopularRequests.contentLayoutGuide.topAnchor
             ),
             stack2PopularRequests.leadingAnchor.constraint(
                 equalTo: scroll2PopularRequests.contentLayoutGuide.leadingAnchor
@@ -104,10 +115,14 @@ final class PopularRequestsView: UIView {
                 equalTo: scroll2PopularRequests.contentLayoutGuide.trailingAnchor
             ),
             stack2PopularRequests.bottomAnchor.constraint(
-                equalTo: scroll2PopularRequests.contentLayoutGuide.bottomAnchor,
-                constant: -5
+                equalTo: scroll2PopularRequests.contentLayoutGuide.bottomAnchor
             )
         ])
     }
-    
+}
+
+extension PopularRequestsView: PopularRequestsButtonDelegate {
+    func searchPopularRequests(text: String) {
+        popularRequestsViewDelegate?.textReceived(text: text)
+    }
 }

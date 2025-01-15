@@ -92,22 +92,35 @@ final class JSONReader {
             }
         }
     }
-    
+
     func findSearchStocks(newString: [Character]) {
         searchModels.removeAll()
 
-        for i in 0..<20{
-            let model = Array(self.stockModels[i].jsonModel.ticker)
-            var flag = true
-            let length = newString.count < model.count ? newString.count : model.count
-                        
-            for j in 0..<length {
-                if newString[j] != model[j] {
-                    flag = false
+        for i in 0..<20 {
+            let ticker = Array(self.stockModels[i].jsonModel.ticker.lowercased())
+            let name = Array(self.stockModels[i].jsonModel.name.lowercased())
+            
+            var flagTicker = true
+            var flagName = true
+            
+            let lengthForTicker = min(newString.count, ticker.count)
+            let lengthForName = min(newString.count, name.count)
+            
+            for j in 0..<lengthForTicker {
+                if newString[j] != ticker[j] {
+                    flagTicker = false
+                    break
                 }
             }
             
-            if flag {
+            for j in 0..<lengthForName {
+                if newString[j] != name[j] {
+                    flagName = false
+                    break
+                }
+            }
+            
+            if flagTicker || flagName {
                 searchModels.append(self.stockModels[i])
             }
         }

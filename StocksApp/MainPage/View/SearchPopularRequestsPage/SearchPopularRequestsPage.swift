@@ -7,10 +7,17 @@
 
 import UIKit
 
+protocol SearchPopularRequestsPageDelegate {
+    func searchForTheCompanyByTitle(title: String)
+}
+
 final class SearchPopularRequestsPage: UIView {
+    var searchPopularRequestsPageDelegate: SearchPopularRequestsPageDelegate?
     
     var stocks: [StockModel]
+    
     private lazy var popularRequestsView = PopularRequestsView(stocks: stocks)
+    
     private lazy var searchedItemsView = PopularRequestsView(stocks: stocks)
     
     init(stocks: [StockModel]) {
@@ -69,6 +76,8 @@ final class SearchPopularRequestsPage: UIView {
         addSubview(popularRequestsView)
         addSubview(searchedItemsLabel)
         addSubview(searchedItemsView)
+        popularRequestsView.popularRequestsViewDelegate = self
+        searchedItemsView.popularRequestsViewDelegate = self
     }
     
     private func setLayout() {
@@ -98,15 +107,8 @@ final class SearchPopularRequestsPage: UIView {
     
 }
 
-// two different scrolls for two different stacks
-
-//class SearchPopularRequestsCollectionView: UICollectionView {
-//    init() {
-//        super.init(frame: .zero)
-//        translatesAutoresizingMaskIntoConstraints = false
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//}
+extension SearchPopularRequestsPage: PopularRequestsViewDelegate {
+    func textReceived(text: String) {
+        searchPopularRequestsPageDelegate?.searchForTheCompanyByTitle(title: text)
+    }
+}

@@ -15,7 +15,7 @@ protocol SearchTextFieldDelegate {
 }
 
 final class SearchTextField: UITextField {
-    private let padding = UIEdgeInsets(top: 0, left: 45, bottom: 0, right: 0)
+    private let padding = UIEdgeInsets(top: 0, left: 45, bottom: 0, right: 45)
     private let leftViewContainer = UIView()
     private let rightViewContainer = UIView()
     

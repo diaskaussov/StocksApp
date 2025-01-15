@@ -7,14 +7,19 @@
 
 import UIKit
 
+protocol ChartsButtonsViewDelegate: AnyObject {
+    func updateNumberOfDays()
+}
+
 final class ChartButtonsView: UIView {
+    var chartButtonsViewDelegate: ChartsButtonsViewDelegate?
+    var numberOfDays = 1825
     private lazy var dayButton = ChartButton(name: "D")
     private lazy var weekButton = ChartButton(name: "W")
     private lazy var monthButton = ChartButton(name: "M")
     private lazy var halfYearButton = ChartButton(name: "6M")
     private lazy var yearButton = ChartButton(name: "1Y")
     private lazy var allButton = ChartButton(name: "All")
-    
     init() {
         super.init(frame: .zero)
         setButtonProperties()
@@ -48,45 +53,51 @@ final class ChartButtonsView: UIView {
     private func chartButtonTapped(_ sender: UIButton) {
         guard let title = sender.titleLabel?.text else { return }
         chartButtonSelected(sender)
-        
-        switch(title) {
+        switch title {
         case "D":
             chartButtonDefault(weekButton)
             chartButtonDefault(monthButton)
             chartButtonDefault(halfYearButton)
             chartButtonDefault(yearButton)
             chartButtonDefault(allButton)
+            numberOfDays = 1
         case "W":
             chartButtonDefault(dayButton)
             chartButtonDefault(monthButton)
             chartButtonDefault(halfYearButton)
             chartButtonDefault(yearButton)
             chartButtonDefault(allButton)
+            numberOfDays = 7
         case "M":
             chartButtonDefault(dayButton)
             chartButtonDefault(weekButton)
             chartButtonDefault(halfYearButton)
             chartButtonDefault(yearButton)
             chartButtonDefault(allButton)
+            numberOfDays = 30
         case "6M":
             chartButtonDefault(dayButton)
             chartButtonDefault(weekButton)
             chartButtonDefault(monthButton)
             chartButtonDefault(yearButton)
             chartButtonDefault(allButton)
+            numberOfDays = 180
         case "1Y":
             chartButtonDefault(dayButton)
             chartButtonDefault(weekButton)
             chartButtonDefault(monthButton)
             chartButtonDefault(halfYearButton)
             chartButtonDefault(allButton)
+            numberOfDays = 365
         default: // "All"
             chartButtonDefault(dayButton)
             chartButtonDefault(weekButton)
             chartButtonDefault(monthButton)
             chartButtonDefault(halfYearButton)
             chartButtonDefault(yearButton)
+            numberOfDays = 1825
         }
+        chartButtonsViewDelegate?.updateNumberOfDays()
     }
     
     private func chartButtonDefault(_ sender: UIButton) {
