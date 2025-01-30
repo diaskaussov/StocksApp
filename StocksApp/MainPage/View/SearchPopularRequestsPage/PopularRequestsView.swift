@@ -12,10 +12,17 @@ protocol PopularRequestsViewDelegate {
 }
 
 final class PopularRequestsView: UIView {
+    var popularRequestsViewDelegate: PopularRequestsViewDelegate?
     
     private var stocks: [StockModel]
     
-    var popularRequestsViewDelegate: PopularRequestsViewDelegate?
+    private let scroll1PopularRequests = PopularRequestsScrollView()
+    
+    private let scroll2PopularRequests = PopularRequestsScrollView()
+    
+    private let stack1PopularRequests = PopularRequestsStackView()
+    
+    private let stack2PopularRequests = PopularRequestsStackView()
     
     init(stocks: [StockModel]) {
         self.stocks = stocks
@@ -27,56 +34,25 @@ final class PopularRequestsView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    private let scroll1PopularRequests: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.showsHorizontalScrollIndicator = false
-        scrollView.showsVerticalScrollIndicator = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.bounces = false
-        return scrollView
-    }()
-    
-    private let scroll2PopularRequests: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.showsHorizontalScrollIndicator = false
-        scrollView.showsVerticalScrollIndicator = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.bounces = false
-        return scrollView
-    }()
-    
-    
-    private let stack1PopularRequests: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
-    private let stack2PopularRequests: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
+}
+
+//MARK: - Setup View Layout
+
+extension PopularRequestsView {
     private func addSubviews() {
         addSubview(scroll1PopularRequests)
         addSubview(scroll2PopularRequests)
         scroll1PopularRequests.addSubview(stack1PopularRequests)
         scroll2PopularRequests.addSubview(stack2PopularRequests)
-        for model in 0..<20 {
-            let button1 = PopularRequestsButton(text: stocks[model].jsonModel.name)
-            button1.popularRequestsButtonDelegate = self
-            stack1PopularRequests.addArrangedSubview(button1)
-
-            let button2 = PopularRequestsButton(text: stocks[model].jsonModel.name)
-            button2.popularRequestsButtonDelegate = self
-            stack2PopularRequests.addArrangedSubview(button2)
-        }
+//        for model in 0..<20 {
+//            let button1 = PopularRequestsButton(text: stocks[model].jsonModel.name)
+//            button1.popularRequestsButtonDelegate = self
+//            stack1PopularRequests.addArrangedSubview(button1)
+//
+//            let button2 = PopularRequestsButton(text: stocks[model].jsonModel.name)
+//            button2.popularRequestsButtonDelegate = self
+//            stack2PopularRequests.addArrangedSubview(button2)
+//        }
     }
     
     private func setupConstraints() {
@@ -120,6 +96,8 @@ final class PopularRequestsView: UIView {
         ])
     }
 }
+
+//MARK: - PopularRequestsButtonDelegate
 
 extension PopularRequestsView: PopularRequestsButtonDelegate {
     func searchPopularRequests(text: String) {

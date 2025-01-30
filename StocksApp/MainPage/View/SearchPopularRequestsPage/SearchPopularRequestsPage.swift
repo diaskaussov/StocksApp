@@ -14,11 +14,15 @@ protocol SearchPopularRequestsPageDelegate {
 final class SearchPopularRequestsPage: UIView {
     var searchPopularRequestsPageDelegate: SearchPopularRequestsPageDelegate?
     
-    var stocks: [StockModel]
+    private var stocks: [StockModel]
     
     private lazy var popularRequestsView = PopularRequestsView(stocks: stocks)
     
     private lazy var searchedItemsView = PopularRequestsView(stocks: stocks)
+    
+    private let popularRequestsLabel = PopularRequestsLabel(content: "Popular requests")
+    
+    private let searchedItemsLabel = PopularRequestsLabel(content: "You've searched for this")
     
     init(stocks: [StockModel]) {
         self.stocks = stocks
@@ -30,47 +34,11 @@ final class SearchPopularRequestsPage: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    private let popularRequestsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Popular requests"
-        label.textColor = .black
-        label.font = .systemFont(ofSize: 24, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let searchedItemsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "You've searched for this"
-        label.textColor = .black
-        label.font = .systemFont(ofSize: 24, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let scrollSearchedItems: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        return scrollView
-    }()
-    
-    private let stack1SearchedItems: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
-    private let stack2SearchedItems: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
+}
+
+//MARK: - Setup View Layout
+
+extension SearchPopularRequestsPage {
     private func addSubviews() {
         addSubview(popularRequestsLabel)
         addSubview(popularRequestsView)
@@ -104,8 +72,9 @@ final class SearchPopularRequestsPage: UIView {
             searchedItemsView.heightAnchor.constraint(equalToConstant: 90)
         ])
     }
-    
 }
+
+//MARK: - PopularRequestsViewDelegate
 
 extension SearchPopularRequestsPage: PopularRequestsViewDelegate {
     func textReceived(text: String) {

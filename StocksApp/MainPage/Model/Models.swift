@@ -7,20 +7,20 @@
 
 import UIKit
 
-struct jsonModel: Codable {
+struct JsonModel: Codable, Hashable {
     let name: String
     let logo: String?
     let ticker: String
 }
 
-struct finhubData: Codable {
+struct FinhubData: Codable {
     let c: Double // current price
     let d: Double // delta price
     let dp: Double // percentage
 }
 
-struct StockModel {
-    var jsonModel: jsonModel
+struct StockModel: Hashable {
+    var jsonModel: JsonModel
     var image: UIImage? = nil
     var currentPrice: Double? = nil
     var deltaPrice: Double? = nil
