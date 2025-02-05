@@ -8,10 +8,11 @@ protocol ChartsViewControllerDelegate {
 final class ChartsViewController: UIViewController {
     var delegate: ChartsViewControllerDelegate?
     var presenter: ChartsPresenter
-    
+    var dataAvailable = false
     init(presenter: ChartsPresenter) {
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
+        presenter.chartPresenterDelegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -21,28 +22,35 @@ final class ChartsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        chartButtonsView.chartButtonsViewDelegate = self
         setButtonProperties()
         setStockInfo()
         addSubViews()
         setupLayout()
+        setData()
+        setMarker()
     }
     
-    private let lineChartView: LineChartView = {
-        let view = LineChartView()
-        view.rightAxis.enabled = false
-        view.leftAxis.enabled = false
-        view.xAxis.enabled = false
-        view.chartDescription.enabled = false
-        view.legend.enabled = false
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
+    private let lineChartView = StockLineChartView()
     
     private let topView = TopView()
     
     private let menuView = MenuView()
     
+    private let priceLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private let chartButtonsView = ChartButtonsView()
+    
+    private let activityIndicator : UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        return indicator
+    }()
     
     private lazy var buyButton: UIButton = {
         let button = UIButton()
@@ -55,8 +63,6 @@ final class ChartsViewController: UIViewController {
     }()
     
     private func setButtonProperties() {
-        let currentPrice = presenter.getCurrentPrice()
-        buyButton.setTitle("Buy for $\(currentPrice)", for: .normal)
         topView.backButton.addTarget(self, action: #selector(backToMainViewController), for: .touchUpInside)
         topView.starButton.addTarget(self, action: #selector(makeFavourite), for: .touchUpInside)
     }
@@ -72,26 +78,6 @@ final class ChartsViewController: UIViewController {
     private func backToMainViewController(sender: UIButton) {
         navigationController?.popViewController(animated: true)
     }
-    
-    let y: [ChartDataEntry] = [
-        ChartDataEntry(x: 0.0, y: 2.0),
-        ChartDataEntry(x: 1.0, y: 3.0),
-        ChartDataEntry(x: 2.0, y: 4.0),
-        ChartDataEntry(x: 3.0, y: 25.0),
-        ChartDataEntry(x: 4.0, y: 212.0),
-        ChartDataEntry(x: 5.0, y: 2.0),
-        ChartDataEntry(x: 6.0, y: 211.0),
-        ChartDataEntry(x: 7.0, y: 23.0),
-        ChartDataEntry(x: 8.0, y: 5.0),
-        ChartDataEntry(x: 9.0, y: 6.0),
-        ChartDataEntry(x: 10.0, y: 223.0),
-        ChartDataEntry(x: 11.0, y: 35.0),
-        ChartDataEntry(x: 12.0, y: 46.0),
-        ChartDataEntry(x: 13.0, y: 23.0),
-        ChartDataEntry(x: 14.0, y: 53.0),
-        ChartDataEntry(x: 15.0, y: 78.0)
-    ]
-
 }
 
 extension ChartsViewController {
@@ -100,16 +86,18 @@ extension ChartsViewController {
         topView.stockName.text = presenter.getStockName()
         topView.starButton.isSelected = presenter.getStockState()
         topView.starButton.tintColor = presenter.getStarButtonColor(sender: topView.starButton.isSelected)
-        setData()
-        presenter.getStockPrices()
+        priceLabel.text = String(format: "$ %.2f", presenter.getCurrentPrice())
+        buyButton.setTitle(String(format: "Buy for $ %.2f", presenter.getCurrentPrice()), for: .normal)
     }
     
     private func addSubViews() {
         view.addSubview(topView)
         view.addSubview(lineChartView)
         view.addSubview(menuView)
+        view.addSubview(priceLabel)
         view.addSubview(chartButtonsView)
         view.addSubview(buyButton)
+        view.addSubview(activityIndicator)
     }
     
     private func setupLayout() {
@@ -124,6 +112,10 @@ extension ChartsViewController {
             menuView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             menuView.heightAnchor.constraint(equalToConstant: 50),
             
+            priceLabel.topAnchor.constraint(equalTo: menuView.bottomAnchor, constant: 10),
+            priceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 10),
+            priceLabel.heightAnchor.constraint(equalToConstant: 80),
+            
             buyButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
             buyButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             buyButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -135,84 +127,88 @@ extension ChartsViewController {
             chartButtonsView.heightAnchor.constraint(equalToConstant: 50),
             
             lineChartView.bottomAnchor.constraint(equalTo: chartButtonsView.topAnchor, constant: -40),
-            lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            lineChartView.heightAnchor.constraint(equalToConstant: 200),
+            lineChartView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: -8),
+            lineChartView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 8),
+            lineChartView.heightAnchor.constraint(equalToConstant: 350),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
-    
 }
 
 extension ChartsViewController: ChartViewDelegate {
     func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
-        print(entry)
+        print("Entry: \(entry)")
     }
     
     func setData() {
-        let set1 = LineChartDataSet(entries: y, label: "")
-        set1.mode = .cubicBezier
-        set1.drawCirclesEnabled = false
-        set1.lineWidth = 2
-        set1.setColor(.black)
-        set1.fillColor = .gray
-        set1.fillAlpha = 0.05
-        set1.drawFilledEnabled = true
-        
-        let data = LineChartData(dataSets: [set1])
-        data.setDrawValues(false)
-        lineChartView.data = data
+        if !dataAvailable {
+            activityIndicator.startAnimating()
+            lineChartView.isHidden = true
+        } else {
+            let numberOfDays = chartButtonsView.numberOfDays
+            if numberOfDays == 1 {
+                setMarkerForIntraday()
+            } else {
+                setMarker()
+            }
+            let set1 = LineChartDataSet(
+                entries: presenter.getStockData(numberOfDays: chartButtonsView.numberOfDays),
+                label: ""
+            )
+            set1.mode = .cubicBezier
+            set1.drawCirclesEnabled = false
+            set1.lineWidth = 2
+            set1.setColor(.black)
+            set1.drawFilledEnabled = true
+            set1.drawVerticalHighlightIndicatorEnabled = false
+            set1.drawHorizontalHighlightIndicatorEnabled = false
+            set1.fill = LinearGradientFill(gradient: self.presenter.getGradientFilling(),angle: 90)
+            
+            let data = LineChartData(dataSets: [set1])
+            data.setDrawValues(false)
+            DispatchQueue.main.async { [self] in
+                self.lineChartView.data = data
+                self.lineChartView.isHidden = false
+                self.activityIndicator.stopAnimating()
+            }
+        }
+    }
+    func setMarker() {
+        let marker = RectMarker(
+            color: .black,
+            font: UIFont.systemFont(ofSize: CGFloat(12.0)),
+            insets: UIEdgeInsets(top: 8.0, left: 20, bottom: 4.0, right: 0),
+            flag: false
+        )
+        marker.chartView = lineChartView
+        marker.minimumSize = CGSize(width: CGFloat(60.0), height: CGFloat(30.0))
+        lineChartView.marker = marker
+    }
+    
+    func setMarkerForIntraday() {
+        let marker = RectMarker(
+            color: .black,
+            font: UIFont.systemFont(ofSize: CGFloat(12.0)),
+            insets: UIEdgeInsets(top: 8.0, left: 20, bottom: 4.0, right: 0),
+            flag: true
+        )
+        marker.chartView = lineChartView
+        marker.minimumSize = CGSize(width: CGFloat(60.0), height: CGFloat(30.0))
+        lineChartView.marker = marker
     }
 }
-/*
 
- To-do's:
- 1) View for
-    i) MenuStack
-    ii) ChartStack & delegate when tapped
- 2) Presenter logic
+extension ChartsViewController: ChartsPresenterDelegate {
+    func drawChartLine() {
+        dataAvailable = true
+        setData()
+    }
+}
 
-*/
-
-
-/*
- What was before:
- 
-       private let topView: UIView {
-           let view = UIView()
-           view.translatesAutoresizingMaskIntoConstraints = false
-           return view
-       }()
- 
- //    private lazy var backButton: UIButton = {
- //        let button = UIButton()
-           button.tintColor = .black
-           button.setImage(UIImage(systemName: "arrowshape.backward"), for: .normal)
-           button.addTarget(self, action: #selector(backToMainViewController), for: .touchUpInside)
-           button.translatesAutoresizingMaskIntoConstraints = false
- //        return button
- //    }()
- 
-//    private lazy var starButton: UIButton = {
-//        let button = UIButton()
-//        button.tintColor = .black
-//        button.setImage(UIImage(systemName: "star.fill"), for: .normal)
-//        button.addTarget(self, action: #selector(makeFavourite), for: .touchUpInside)
-//        button.translatesAutoresizingMaskIntoConstraints = false
-//        return button
-//    }()
-//
-//    private let stockTicker: UILabel = {
-//        let label = UILabel()
-//        label.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        return label
-//    }()
-//
-//    private let stockName: UILabel = {
-//        let label = UILabel()
-//        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        return label
-//    }()
-
- */
+extension ChartsViewController: ChartsButtonsViewDelegate {
+    func updateNumberOfDays() {
+        setData()
+    }
+}

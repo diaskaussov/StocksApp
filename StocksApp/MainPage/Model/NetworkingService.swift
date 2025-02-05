@@ -8,9 +8,8 @@
 import UIKit
 
 final class NetworkingService {
-    
-    //Finhub API Key: ctekv9hr01qt478m7utgctekv9hr01qt478m7uu0
-    //Secret: ctekv9hr01qt478m7uv0
+    private let apiKey = "ctekv9hr01qt478m7utgctekv9hr01qt478m7uu0" // unused variable
+    private let secret = "ctekv9hr01qt478m7uv0" // unused variable
     
     func downloadImage(
         urlString: String?,
@@ -25,7 +24,7 @@ final class NetworkingService {
         
         URLSession.shared.dataTask(with: url) { (data, response, error) in
             if let error {
-                print("Error in downloading image: \(error)")
+                print("NetworkingService, Error in downloading image: \(error)")
                 completion(UIImage(systemName: "x.square.fill"))
                 return
             }
@@ -36,55 +35,57 @@ final class NetworkingService {
                 completion(image)
                 return
             }
-            completion(nil)
+            completion(UIImage(systemName: "x.square.fill"))
         }.resume()
     }
     
-    func downloadPriceData(urlString: String, completion: @escaping (finhubData?) -> Void) {
+    private let errorData = FinhubData(c: 0.0, d: 0.0, dp: 0.0)
+    
+    func downloadPriceData(urlString: String, completion: @escaping (FinhubData?) -> Void) {
         
         guard let url = URL(string: urlString) else {
-            completion(nil)
+            completion(errorData)
             return
         }
         
         let session = URLSession(configuration: .default)
-        let task = session.dataTask(with: url) { (data, response, error) in
+        let task = session.dataTask(with: url) { [self] (data, response, error) in
             if let error = error {
-                print("Error fetching data: \(error)")
-                completion(nil)
+                print("NetworkingService, Error fetching data: \(error)")
+                completion(errorData)
                 return
             }
             
             guard let safeData = data else {
-                print("No data received.")
-                completion(nil)
+                print("NetworkingService, No data received.")
+                completion(errorData)
                 return
             }
             
             guard let parsedData = self.parseJson(priceData: safeData) else {
-                print("Error parsing data.")
-                completion(nil)
+                print("NetworkingService, Error parsing data.")
+                completion(errorData)
                 return
             }
             
-            let finData = finhubData(c: parsedData.c, d: parsedData.d, dp: parsedData.dp)
+            let finData = FinhubData(c: parsedData.c, d: parsedData.d, dp: parsedData.dp)
             completion(finData)
         }
         task.resume()
     }
 
     
-    func parseJson(priceData: Data) -> finhubData? {
+    func parseJson(priceData: Data) -> FinhubData? {
         let decoder = JSONDecoder()
         do {
-            let decodedData = try decoder.decode(finhubData.self, from: priceData)
+            let decodedData = try decoder.decode(FinhubData.self, from: priceData)
             let currentPrice = decodedData.c
             let deltaPrice = decodedData.d
             let percentage = decodedData.dp
-            let finhubModel = finhubData(c: currentPrice, d: deltaPrice, dp: percentage)
+            let finhubModel = FinhubData(c: currentPrice, d: deltaPrice, dp: percentage)
             return finhubModel
         } catch {
-            print("NetworkgingService, ParseJson: \(error)")
+            print("NetworkgingService, ParseJsonError: \(error)")
             return nil
         }
     }
