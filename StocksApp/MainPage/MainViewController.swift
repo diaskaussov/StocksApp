@@ -1,4 +1,3 @@
-//
 //  ViewController.swift
 //  StocksApp
 //
@@ -15,9 +14,9 @@ final class MainViewController: UIViewController {
     
     private let buttonView = StockButtonsView()
     
-    private lazy var popularRequestsPage = SearchPopularRequestsPage(stocks: mainPageManager.stockModels)
-    
     private lazy var searchBar = SearchBar(placeholder: "Find company or ticker")
+    
+    private lazy var popularRequestsPage = SearchPopularRequestsPage(stocks: mainPageManager.stockModels)
     
     private let activityIndicator : UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .large)
@@ -120,22 +119,9 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if buttonView.favouriteButton.isSelected {
-            if indexPath.row + 1 >= mainPageManager.favouriteModels.count {
-                let count = mainPageManager.favouriteModels.count + 1
-                if mainPageManager.numberOfStocksCoreData >= 20 {
-                    mainPageManager.stockMakeNetworkRequests(count, count + 19)
-                    mainPageManager.numberOfStocksCoreData -= 20
-                } else if mainPageManager.numberOfStocksCoreData > 0 {
-                    mainPageManager.stockMakeNetworkRequests(count, count + mainPageManager.numberOfStocksCoreData - 1)
-                    mainPageManager.numberOfStocksCoreData = 0
-                }
-            }
-        } else {
-            if indexPath.row + 1 >= mainPageManager.stockModels.count {
-                let count = mainPageManager.stockModels.count + 1
-                mainPageManager.stockMakeNetworkRequests(count, count + 19)
-            }
+        let numberOfStocks = mainPageManager.stockModels.count
+        if indexPath.row + 1 >= numberOfStocks {
+            mainPageManager.stockMakeNetworkRequests(numberOfStocks, numberOfStocks + 19)
         }
     }
     
@@ -191,6 +177,7 @@ extension MainViewController: StocksTableViewCellDelegate {
 
 extension MainViewController: StockButtonsViewDelegate {
     func buttonTapped() {
+        stocksTableView.setContentOffset(.zero, animated: true)
         stocksTableView.reloadData()
     }
 }
@@ -288,6 +275,7 @@ extension MainViewController {
         buttonView.stocksButton.isHidden = true
         buttonView.favouriteButton.isHidden = true
         stocksTableView.removeFromSuperview()
+        popularRequestsPage = SearchPopularRequestsPage(stocks: mainPageManager.stockModels)
         view.addSubview(popularRequestsPage)
         NSLayoutConstraint.activate([
             popularRequestsPage.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 40),

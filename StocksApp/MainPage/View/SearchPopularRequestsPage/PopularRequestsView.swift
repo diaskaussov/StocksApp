@@ -44,15 +44,17 @@ extension PopularRequestsView {
         addSubview(scroll2PopularRequests)
         scroll1PopularRequests.addSubview(stack1PopularRequests)
         scroll2PopularRequests.addSubview(stack2PopularRequests)
-//        for model in 0..<20 {
-//            let button1 = PopularRequestsButton(text: stocks[model].jsonModel.name)
-//            button1.popularRequestsButtonDelegate = self
-//            stack1PopularRequests.addArrangedSubview(button1)
-//
-//            let button2 = PopularRequestsButton(text: stocks[model].jsonModel.name)
-//            button2.popularRequestsButtonDelegate = self
-//            stack2PopularRequests.addArrangedSubview(button2)
-//        }
+        if (!stocks.isEmpty) {
+            for model in 0..<20 {
+                let button1 = PopularRequestsButton(text: stocks[model].jsonModel.name)
+                button1.popularRequestsButtonDelegate = self
+                stack1PopularRequests.addArrangedSubview(button1)
+
+                let button2 = PopularRequestsButton(text: stocks[model].jsonModel.name)
+                button2.popularRequestsButtonDelegate = self
+                stack2PopularRequests.addArrangedSubview(button2)
+            }
+        }
     }
     
     private func setupConstraints() {

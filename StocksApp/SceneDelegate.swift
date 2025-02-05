@@ -22,7 +22,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
-
+        let manager = MainPageManager()
+        manager.saveContext()
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
