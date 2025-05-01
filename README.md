@@ -87,6 +87,7 @@ It uses 4 main screens:
   - Appears when search bar is tapped, and text is provided.
   - Can add searched stocks to favourites.
 
+  <p align="middle">
   <img src="https://github.com/user-attachments/assets/47336f8b-f0e2-4d5e-b002-a43bfbe8b05d" width="191.17" height="400" />
   <img src="https://github.com/user-attachments/assets/4c4650a8-3c9c-4c99-b4d5-f5dd0fb0aee4" width="191.17" height="400" />
   <img src="https://github.com/user-attachments/assets/199086dc-7d57-4c07-99ae-83448e82ab4b" width="191.17" height="400" />
