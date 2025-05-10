@@ -8,14 +8,17 @@
 import UIKit
 
 protocol StocksTableViewCellDelegate {
-    func favouriteStockSelected(state: Bool, ticker: String?)
+    func favouriteStockSelected(state: Bool, ticker: String?, logoUrl: String?, name: String?)
 }
 
 final class StocksTableViewCell: UITableViewCell {
     static let identifier = "StocksTableViewCell"
     
     private var index: Int?
+    
     var delegate: StocksTableViewCellDelegate?
+    
+    private var logoUrl: String?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -29,11 +32,9 @@ final class StocksTableViewCell: UITableViewCell {
     
     private let photoImageView: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(systemName: "apple.logo")
         image.tintColor = .black
         image.contentMode = .scaleAspectFit
         image.layer.cornerRadius = 8
-        image.backgroundColor = .yellow
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
@@ -55,7 +56,7 @@ final class StocksTableViewCell: UITableViewCell {
     
     private let currentPriceLabel: UILabel = {
         let label = UILabel()
-        label.text = "$\(131.4)"
+        label.text = "$\(0)"
         label.font = .systemFont(ofSize: 22, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -63,7 +64,7 @@ final class StocksTableViewCell: UITableViewCell {
     
     private let deltaPriceLabel: UILabel = {
         let label = UILabel()
-        label.text = "+$\(0.12)"
+        label.text = "+$\(0)"
         label.font = .systemFont(ofSize: 14, weight: .semibold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -71,7 +72,7 @@ final class StocksTableViewCell: UITableViewCell {
     
     private let percentageLabel: UILabel = {
         let label = UILabel()
-        label.text = "(\(1.15)%)"
+        label.text = "(\(0)%)"
         label.font = .systemFont(ofSize: 14, weight: .semibold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -102,7 +103,13 @@ final class StocksTableViewCell: UITableViewCell {
             sender.isSelected = false
         }
         
-        delegate?.favouriteStockSelected(state: sender.isSelected, ticker: tickerLabel.text)
+        delegate?.favouriteStockSelected(
+            state: sender.isSelected,
+            ticker: tickerLabel.text,
+            logoUrl: logoUrl,
+            name: nameLabel.text
+        )
+        
     }
     
     private func setButtonColor(_ sender: UIButton) {
@@ -119,7 +126,7 @@ final class StocksTableViewCell: UITableViewCell {
     }
     
     func setBackground(even: Bool) {
-        if (even) {
+        if even {
             self.backgroundColor = .systemGray6
         } else {
             self.backgroundColor = .white
@@ -130,6 +137,7 @@ final class StocksTableViewCell: UITableViewCell {
         photoImageView.image = cellModel.image
         nameLabel.text = cellModel.jsonModel.name
         tickerLabel.text = cellModel.jsonModel.ticker
+        logoUrl = cellModel.jsonModel.logo
         
         guard let currentPrice = cellModel.currentPrice else { return }
         currentPriceLabel.text = String(format: "$%.2f", currentPrice)
@@ -161,7 +169,6 @@ final class StocksTableViewCell: UITableViewCell {
         contentView.addSubview(currentPriceLabel)
         contentView.addSubview(deltaPriceLabel)
         contentView.addSubview(percentageLabel)
-        
         self.layer.cornerRadius = 16
         
         NSLayoutConstraint.activate([

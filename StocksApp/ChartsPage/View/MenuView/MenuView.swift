@@ -8,21 +8,14 @@ import UIKit
 
 class MenuView: UIView {
     private lazy var chartButton = MenuButton(title: "Chart")
+    
     private lazy var summaryButton = MenuButton(title: "Summary")
+    
     private lazy var newsButton = MenuButton(title: "News")
+    
     private lazy var forecastsButton = MenuButton(title: "Forecasts")
+    
     private lazy var ideasButton = MenuButton(title: "Ideas")
-    
-    init() {
-        super.init(frame: .zero)
-        setButtonProperties()
-        addSubviews()
-        setLayout()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
     
     private let menuStack: UIStackView = {
         let stack = UIStackView()
@@ -40,6 +33,50 @@ class MenuView: UIView {
         return scrollView
     }()
     
+    init() {
+        super.init(frame: .zero)
+        setButtonProperties()
+        addSubviews()
+        setLayout()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+//MARK: - Setup View Layout
+
+private extension MenuView {
+    private func addSubviews() {
+        self.addSubview(menuScrollView)
+        menuScrollView.addSubview(menuStack)
+        menuStack.addArrangedSubview(chartButton)
+        menuStack.addArrangedSubview(summaryButton)
+        menuStack.addArrangedSubview(newsButton)
+        menuStack.addArrangedSubview(forecastsButton)
+        menuStack.addArrangedSubview(ideasButton)
+    }
+    
+    private func setLayout() {
+        self.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            menuScrollView.topAnchor.constraint(equalTo: self.topAnchor),
+            menuScrollView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            menuScrollView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            menuScrollView.heightAnchor.constraint(equalToConstant: 50),
+            
+            menuStack.topAnchor.constraint(equalTo: menuScrollView.contentLayoutGuide.topAnchor),
+            menuStack.leadingAnchor.constraint(equalTo: menuScrollView.contentLayoutGuide.leadingAnchor, constant: 5),
+            menuStack.trailingAnchor.constraint(equalTo: menuScrollView.contentLayoutGuide.trailingAnchor, constant: -5),
+            menuStack.heightAnchor.constraint(equalToConstant: 50),
+        ])
+    }
+}
+
+//MARK: - Buttons' logic
+
+private extension MenuView {
     private func setButtonProperties() {
         makeFontSelected(chartButton)
         chartButton.addTarget(self, action: #selector(menuButtonSelected), for: .touchUpInside)
@@ -96,30 +133,4 @@ class MenuView: UIView {
         )
         sender.setTitleColor(.black, for: .normal)
     }
-    
-    private func addSubviews() {
-        self.addSubview(menuScrollView)
-        menuScrollView.addSubview(menuStack)
-        menuStack.addArrangedSubview(chartButton)
-        menuStack.addArrangedSubview(summaryButton)
-        menuStack.addArrangedSubview(newsButton)
-        menuStack.addArrangedSubview(forecastsButton)
-        menuStack.addArrangedSubview(ideasButton)
-    }
-    
-    private func setLayout() {
-        self.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            menuScrollView.topAnchor.constraint(equalTo: self.topAnchor),
-            menuScrollView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            menuScrollView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            menuScrollView.heightAnchor.constraint(equalToConstant: 50),
-            
-            menuStack.topAnchor.constraint(equalTo: menuScrollView.contentLayoutGuide.topAnchor),
-            menuStack.leadingAnchor.constraint(equalTo: menuScrollView.contentLayoutGuide.leadingAnchor, constant: 5),
-            menuStack.trailingAnchor.constraint(equalTo: menuScrollView.contentLayoutGuide.trailingAnchor, constant: -5),
-            menuStack.heightAnchor.constraint(equalToConstant: 50),
-        ])
-    }
-    
 }
